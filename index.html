@@ -317,11 +317,20 @@ function selectAnswer(value) {
 }
 
 function nextQuestion() {
+  console.log('nextQuestion called', {currentQ, totalQuestions: questions.length, answeredCount: Object.keys(answers).length});
   if (currentQ < questions.length - 1) {
     currentQ++;
     renderQuestion();
   } else if (Object.keys(answers).length === questions.length) {
-    showResults();
+    console.log('Calling showResults...');
+    try {
+      showResults();
+    } catch(e) {
+      console.error('showResults error:', e);
+      alert('Error showing results: ' + e.message);
+    }
+  } else {
+    console.log('Not all questions answered yet');
   }
 }
 
@@ -503,8 +512,6 @@ function showResults() {
   const interp = getInterpretation(scores);
 
   document.getElementById('questions').style.display = 'none';
-  document.getElementById('nav').style.display = 'none';
-  document.getElementById('intro').style.display = 'none';
   document.getElementById('results').classList.add('active');
 
   drawRadar(scores);
