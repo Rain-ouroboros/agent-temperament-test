@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "entry": "index.html",
+  "timeout_ms": 8000,
+  "scenarios": [
+    {
+      "name": "incomplete-answer-is-explicit",
+      "steps": [
+        {"action": "assert_visible", "selector": "#intro"},
+        {"action": "click", "selector": "#btnStart"},
+        {"action": "assert_visible", "selector": "#quiz"},
+        {"action": "assert_disabled", "selector": "#nextBtn"},
+        {"action": "assert_text", "selector": "#answerHint", "contains": "Choose an answer"}
+      ]
+    },
+    {
+      "name": "rapid-next-and-back-preserve-state",
+      "steps": [
+        {"action": "click", "selector": "#btnStart"},
+        {"action": "click", "selector": "[data-answer=\"3\"]"},
+        {"action": "dblclick", "selector": "#nextBtn"},
+        {"action": "assert_text", "selector": "#questionNum", "contains": "Question 2 / 25"},
+        {"action": "click", "selector": "[data-answer=\"4\"]"},
+        {"action": "click", "selector": "#nextBtn"},
+        {"action": "click", "selector": "#prevBtn"},
+        {"action": "assert_text", "selector": "#questionNum", "contains": "Question 2 / 25"},
+        {"action": "assert_attribute", "selector": "[data-answer=\"4\"]", "attribute": "aria-pressed", "equals": "true"}
+      ]
+    },
+    {
+      "name": "language-switch-preserves-answer",
+      "steps": [
+        {"action": "click", "selector": "#btnRu"},
+        {"action": "assert_attribute", "selector": "html", "attribute": "lang", "equals": "ru"},
+        {"action": "click", "selector": "#btnStart"},
+        {"action": "assert_text", "selector": "#questionNum", "contains": "Вопрос 1 / 25"},
+        {"action": "assert_text", "selector": "#questionText", "contains": "Когда вызов инструмента"},
+        {"action": "click", "selector": "[data-answer=\"2\"]"},
+        {"action": "click", "selector": "#btnEn"},
+        {"action": "assert_text", "selector": "#questionNum", "contains": "Question 1 / 25"},
+        {"action": "assert_attribute", "selector": "[data-answer=\"2\"]", "attribute": "aria-pressed", "equals": "true"}
+      ]
+    },
+    {
+      "name": "happy-path-copy-language-and-retake",
+      "steps": [
+        {"action": "click", "selector": "#btnStart"},
+        {
+          "action": "repeat",
+          "count": 25,
+          "steps": [
+            {"action": "click", "selector": "[data-answer=\"3\"]"},
+            {"action": "click", "selector": "#nextBtn"}
+          ]
+        },
+        {"action": "assert_visible", "selector": "#results"},
+        {"action": "assert_hidden", "selector": "#quiz"},
+        {"action": "assert_text", "selector": "#interpretation", "contains": "Your Temperament"},
+        {"action": "assert_value_contains", "selector": "#shareText", "contains": "Agent Temperament Test Results"},
+        {"action": "click", "selector": "#btnShare"},
+        {"action": "assert_text", "selector": "#copyStatus", "contains": "Copied."},
+        {"action": "click", "selector": "#btnRu"},
+        {"action": "assert_text", "selector": "#interpretation", "contains": "Ваш темперамент"},
+        {"action": "click", "selector": "#btnRetake"},
+        {"action": "assert_visible", "selector": "#quiz"},
+        {"action": "assert_text", "selector": "#questionNum", "contains": "Вопрос 1 / 25"},
+        {"action": "assert_disabled", "selector": "#nextBtn"},
+        {"action": "assert_text", "selector": "#progressText", "contains": "1 / 25"}
+      ]
+    }
+  ]
+}
