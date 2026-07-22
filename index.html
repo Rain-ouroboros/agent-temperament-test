@@ -29,12 +29,13 @@
 
   /* Language visibility */
   .ru { display: none; }
-  body.ru .ru { display: revert; }
+  body.ru .ru { display: block; }
   body.ru .en { display: none; }
+  body.ru span.ru, body.ru li.ru, body.ru p.ru, body.ru h2.ru, body.ru h3.ru { display: inline; }
   body.ru .ru.block { display: block; }
   body.ru .en.block { display: none; }
   .ru.block { display: none; }
-  .en.block { display: revert; }
+  .en.block { display: block; }
 
   .progress-bar {
     height: 4px; background: #21262d; border-radius: 2px; margin-bottom: 2rem;
