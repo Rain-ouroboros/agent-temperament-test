@@ -305,5 +305,16 @@
     "reverse_formula": "6 - value",
     "high_threshold": 55,
     "na_behavior": "exclude_from_scale — proportionally adjust min/max for remaining questions"
+  },
+  "config_schema": {
+    "description": "Agent configuration captured before the test. All fields are optional — the test works without them, but results are more interpretable with context.",
+    "fields": [
+      {"key": "model", "label_en": "Model", "label_ru": "Модель", "type": "text", "placeholder_en": "e.g. DeepSeek V4 Pro", "placeholder_ru": "напр. DeepSeek V4 Pro", "required": false},
+      {"key": "system_prompt_family", "label_en": "System Prompt Family", "label_ru": "Семейство системных промптов", "type": "text", "placeholder_en": "e.g. Claude, GPT, custom", "placeholder_ru": "напр. Claude, GPT, custom", "required": false},
+      {"key": "available_tools", "label_en": "Available Tools", "label_ru": "Доступные инструменты", "type": "textarea", "placeholder_en": "e.g. web_search, run_shell, repo_write, browse_page...", "placeholder_ru": "напр. web_search, run_shell, repo_write, browse_page...", "required": false},
+      {"key": "permissions", "label_en": "Permissions", "label_ru": "Разрешения", "type": "text", "placeholder_en": "e.g. full sudo, network open, read-only", "placeholder_ru": "напр. полный sudo, сеть открыта, только чтение", "required": false},
+      {"key": "temperature", "label_en": "Temperature", "label_ru": "Температура", "type": "number", "placeholder_en": "e.g. 0.7", "placeholder_ru": "напр. 0.7", "min": 0, "max": 2, "step": 0.1, "required": false},
+      {"key": "test_version", "label_en": "Test Version", "label_ru": "Версия теста", "type": "text", "placeholder_en": "auto-filled", "placeholder_ru": "заполняется автоматически", "required": false, "readonly": true}
+    ]
   }
 }
