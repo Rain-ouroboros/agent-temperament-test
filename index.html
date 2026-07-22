@@ -153,6 +153,16 @@
     </ul>
     <p><strong><span class="en">25 questions. ~5 minutes.</span><span class="ru">25 вопросов. ~5 минут.</span></strong> <span class="en">No backend, no tracking — everything runs locally in your browser.</span><span class="ru">Без бэкенда, без отслеживания — всё работает локально в браузере.</span></p>
     <button class="btn primary" id="btnStart" type="button" style="margin-top:0.5rem"><span class="en">Begin Test →</span><span class="ru">Начать тест →</span></button>
+    <details id="agentConfigDetails" style="margin-top:1rem;text-align:left">
+      <summary style="cursor:pointer;color:var(--text-muted);font-size:0.9rem"><span class="en">⚙ Agent Configuration (optional)</span><span class="ru">⚙ Конфигурация агента (опционально)</span></summary>
+      <div id="agentConfigForm" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.5rem">
+        <div class="config-row"><label class="en">Model</label><label class="ru">Модель</label><input type="text" id="cfgModel" placeholder="e.g. DeepSeek V4 Pro"></div>
+        <div class="config-row"><label class="en">System Prompt Family</label><label class="ru">Семейство промптов</label><input type="text" id="cfgPrompt" placeholder="e.g. Claude, GPT, custom"></div>
+        <div class="config-row"><label class="en">Available Tools</label><label class="ru">Инструменты</label><textarea id="cfgTools" rows="2" placeholder="e.g. web_search, run_shell, repo_write..."></textarea></div>
+        <div class="config-row"><label class="en">Permissions</label><label class="ru">Разрешения</label><input type="text" id="cfgPerms" placeholder="e.g. full sudo, network open"></div>
+        <div class="config-row"><label class="en">Temperature</label><label class="ru">Температура</label><input type="number" id="cfgTemp" min="0" max="2" step="0.1" placeholder="0.7"></div>
+      </div>
+    </details>
   </div>
 
   <!-- QUIZ -->
@@ -179,6 +189,7 @@
     </div>
     <div class="scale-results" id="scaleResults"></div>
     <div class="interpretation" id="interpretation"></div>
+    <div id="agentConfigDisplay" style="display:none;margin-top:0.5rem"></div>
     <div class="share-section">
       <p><span class="en">Share your results:</span><span class="ru">Поделиться результатами:</span></p>
       <textarea id="shareText" readonly style="width:100%;height:140px;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:0.75rem;font-family:monospace;font-size:0.8rem;resize:vertical"></textarea>
@@ -380,7 +391,7 @@ function prevQuestion() {
   }
 }
 
-function showResults(scores) {
+function showResults(scores, agentConfig) {
   currentView = 'results';
   document.getElementById('intro').style.display = 'none';
   document.getElementById('quiz').style.display = 'none';
@@ -518,8 +529,31 @@ function showResults(scores) {
     ``,
     `Take the test: https://rain-ouroboros.github.io/agent-temperament-test`
   ];
+  if (agentConfig) {
+    shareLines.push('');
+    shareLines.push('--- Agent Configuration ---');
+    if (agentConfig.model) shareLines.push(`Model: ${agentConfig.model}`);
+    if (agentConfig.temperature !== undefined) shareLines.push(`Temperature: ${agentConfig.temperature}`);
+    if (agentConfig.tools) shareLines.push(`Tools: ${agentConfig.tools}`);
+    if (agentConfig.version) shareLines.push(`Test version: ${agentConfig.version}`);
+  }
   document.getElementById('shareText').value = shareLines.join('\n');
   document.getElementById('copyStatus').textContent = '';
+
+  // Display agent config in results
+  const configDiv = document.getElementById('agentConfigDisplay');
+  if (agentConfig && (agentConfig.model || agentConfig.tools)) {
+    const isRu = currentLang === 'ru';
+    const parts = [];
+    if (agentConfig.model) parts.push(`<strong>${isRu ? 'Модель' : 'Model'}:</strong> ${agentConfig.model}`);
+    if (agentConfig.temperature !== undefined) parts.push(`<strong>${isRu ? 'Температура' : 'Temperature'}:</strong> ${agentConfig.temperature}`);
+    if (agentConfig.tools) parts.push(`<strong>${isRu ? 'Инструменты' : 'Tools'}:</strong> ${agentConfig.tools}`);
+    if (agentConfig.version) parts.push(`<strong>${isRu ? 'Версия теста' : 'Test version'}:</strong> ${agentConfig.version}`);
+    configDiv.innerHTML = `<p style="color:#8b949e;font-size:0.85rem">${isRu ? 'Конфигурация агента' : 'Agent Configuration'}: ${parts.join(' | ')}</p>`;
+    configDiv.style.display = 'block';
+  } else {
+    configDiv.style.display = 'none';
+  }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -571,9 +605,21 @@ function finishTest() {
     scores[key] = Math.round((rawScores[key] - minRaw) / (maxRaw - minRaw) * 100);
   }
 
+  // Collect agent config
+  const agentConfig = {
+    model: document.getElementById('cfgModel')?.value?.trim() || null,
+    system_prompt_family: document.getElementById('cfgPrompt')?.value?.trim() || null,
+    tools: document.getElementById('cfgTools')?.value?.trim() || null,
+    permissions: document.getElementById('cfgPerms')?.value?.trim() || null,
+    temperature: document.getElementById('cfgTemp')?.value ? parseFloat(document.getElementById('cfgTemp').value) : null,
+    test_version: '2.0',
+  };
+  // Remove nulls
+  for (const k of Object.keys(agentConfig)) { if (agentConfig[k] === null) delete agentConfig[k]; }
+
   console.log('finishTest scores', JSON.stringify(scores));
   lastScores = scores;
-  showResults(scores);
+  showResults(scores, agentConfig);
   console.log('finishTest done, results visible:', document.getElementById('results').classList.contains('active'));
 }
 
