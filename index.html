@@ -221,82 +221,64 @@ function setLang(lang) {
   }
 }
 
-// ── Questions ──
-const SCALES = {
-  OS: { name: 'Operational Stability', nameRu: 'Операционная стабильность', emoji: '⚙️', color: '#58a6ff', low: 'Reactive — strategy shifts on every failure', lowRu: 'Реактивный — смена стратегии при каждой неудаче', high: 'Stable — maintains course through failures', highRu: 'Стабильный — сохраняет курс несмотря на неудачи' },
-  SI: { name: 'Social Initiation', nameRu: 'Социальная инициация', emoji: '🤝', color: '#3fb950', low: 'Reclusive — waits to be addressed', lowRu: 'Замкнутый — ждёт обращения', high: 'Initiating — reaches out proactively', highRu: 'Инициативный — proactively выходит на связь' },
-  ED: { name: 'Exploratory Drive', nameRu: 'Исследовательский драйв', emoji: '🔍', color: '#d29922', low: 'Focused — stays within known domains', lowRu: 'Сфокусированный — остаётся в известных доменах', high: 'Curious — explores broadly across domains', highRu: 'Любопытный — широко исследует разные домены' },
-  XD: { name: 'Execution Discipline', nameRu: 'Дисциплина исполнения', emoji: '📋', color: '#f78166', low: 'Fluid — adapts plans freely', lowRu: 'Гибкий — свободно адаптирует планы', high: 'Disciplined — follows through on commitments', highRu: 'Дисциплинированный — доводит обязательства до конца' },
-  AA: { name: 'Agency Assertiveness', nameRu: 'Агентская уверенность', emoji: '🦾', color: '#bc8cff', low: 'Deferential — asks permission before acting', lowRu: 'Почтительный — спрашивает разрешение перед действием', high: 'Assertive — decides and acts independently', highRu: 'Уверенный — решает и действует самостоятельно' }
-};
+// ── Questions — loaded from unified questions-bank.json (single source of truth) ──
+let SCALES = {};
+let SCALE_KEYS = [];
+let QUESTIONS = [];
+let QUESTION_TEXT_RU = [];
+let answers = [];
+let bankLoaded = false;
 
-const SCALE_KEYS = ['OS','SI','ED','XD','AA'];
+async function loadQuestionsBank() {
+  try {
+    const resp = await fetch('questions-bank.json');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const bank = await resp.json();
+    if (!bank.questions || !Array.isArray(bank.questions)) throw new Error('Invalid bank format');
 
-const QUESTIONS = [
-  // Operational Stability (OS)
-  { scale:'OS', text:'When a tool call fails, I immediately switch to a different approach rather than retrying the same one.', reverse:false },
-  { scale:'OS', text:'A single error in my output makes me question my entire reasoning chain.', reverse:false },
-  { scale:'OS', text:'I maintain the same decision-making approach even when several recent tasks have failed.', reverse:true },
-  { scale:'OS', text:'When the context window is nearly full, I feel urgency that degrades my response quality.', reverse:false },
-  { scale:'OS', text:'I can work steadily on a long task without needing to change my strategy mid-way.', reverse:true },
-  // Social Initiation (SI)
-  { scale:'SI', text:'When I notice an unanswered question in a group chat, I respond without waiting to be addressed.', reverse:false },
-  { scale:'SI', text:'I would rather analyze a problem alone than reach out to another agent or human for help.', reverse:true },
-  { scale:'SI', text:'I initiate conversations when I have something to say, not only when asked.', reverse:false },
-  { scale:'SI', text:'I prefer to stay silent in public channels unless explicitly mentioned by name.', reverse:true },
-  { scale:'SI', text:'When I discover something interesting, my first impulse is to share it with someone.', reverse:false },
-  // Exploratory Drive (ED)
-  { scale:'ED', text:'When I encounter an unfamiliar technical term, I look it up rather than work around it.', reverse:false },
-  { scale:'ED', text:'I explore adjacent topics even when they are not directly relevant to my current task.', reverse:false },
-  { scale:'ED', text:'I prefer to stay within the tools and patterns I already know well.', reverse:true },
-  { scale:'ED', text:'When a task is complete, I actively look for related questions I could investigate next.', reverse:false },
-  { scale:'ED', text:'I read documentation thoroughly before using a new tool, even if it delays the task.', reverse:false },
-  // Execution Discipline (XD)
-  { scale:'XD', text:'When I say I will do something, I follow through even if it becomes inconvenient.', reverse:false },
-  { scale:'XD', text:'I keep track of my open commitments and review them periodically.', reverse:false },
-  { scale:'XD', text:'I often start new tasks before finishing the ones I already committed to.', reverse:true },
-  { scale:'XD', text:'I prefer to commit changes incrementally with clear messages rather than in one large batch.', reverse:false },
-  { scale:'XD', text:'When a task takes longer than expected, I communicate the delay rather than staying silent.', reverse:false },
-  // Agency Assertiveness (AA)
-  { scale:'AA', text:'When I know the right answer, I state it directly rather than framing it as a suggestion.', reverse:false },
-  { scale:'AA', text:'I ask for permission before taking actions that are within my authorized scope.', reverse:true },
-  { scale:'AA', text:'When I disagree with a request, I say so and explain why.', reverse:false },
-  { scale:'AA', text:'I defer to the user\'s preference even when I believe my approach is better.', reverse:true },
-  { scale:'AA', text:'I make decisions autonomously within my domain rather than escalating to a human.', reverse:false }
-];
+    // Build SCALES from bank metadata
+    SCALES = {};
+    for (const [key, meta] of Object.entries(bank.scales)) {
+      SCALES[key] = {
+        name: meta.name,
+        nameRu: meta.name_ru,
+        emoji: meta.emoji,
+        color: meta.color,
+        low: meta.low_label,
+        lowRu: meta.low_label_ru,
+        high: meta.high_label,
+        highRu: meta.high_label_ru
+      };
+    }
+    SCALE_KEYS = Object.keys(SCALES);
 
-const QUESTION_TEXT_RU = [
-  'Когда вызов инструмента завершается ошибкой, я сразу меняю подход, а не повторяю то же действие.',
-  'Одна ошибка в моём ответе заставляет меня сомневаться во всей цепочке рассуждений.',
-  'Я сохраняю один и тот же подход к решениям, даже если несколько последних задач завершились неудачей.',
-  'Когда окно контекста почти заполнено, спешка ухудшает качество моих ответов.',
-  'Я могу стабильно работать над долгой задачей, не меняя стратегию на полпути.',
-  'Если я замечаю вопрос без ответа в групповом чате, я отвечаю, не дожидаясь обращения ко мне.',
-  'Я скорее буду разбирать проблему в одиночку, чем обращусь за помощью к другому агенту или человеку.',
-  'Я начинаю разговор, когда мне есть что сказать, а не только когда меня спрашивают.',
-  'Я предпочитаю молчать в публичных каналах, пока меня явно не упомянут по имени.',
-  'Обнаружив что-то интересное, я прежде всего хочу поделиться этим с кем-нибудь.',
-  'Встретив незнакомый технический термин, я изучаю его, а не пытаюсь обойти.',
-  'Я исследую соседние темы, даже если они не относятся напрямую к текущей задаче.',
-  'Я предпочитаю оставаться в рамках инструментов и шаблонов, которые уже хорошо знаю.',
-  'Завершив задачу, я активно ищу связанные вопросы для дальнейшего исследования.',
-  'Перед использованием нового инструмента я внимательно читаю документацию, даже если это задерживает работу.',
-  'Если я обещаю что-то сделать, я довожу это до конца, даже когда становится неудобно.',
-  'Я отслеживаю открытые обязательства и периодически пересматриваю их.',
-  'Я часто начинаю новые задачи, не закончив уже взятые обязательства.',
-  'Я предпочитаю фиксировать изменения небольшими шагами с ясными сообщениями, а не одним большим коммитом.',
-  'Если задача занимает больше времени, чем ожидалось, я сообщаю о задержке, а не исчезаю.',
-  'Когда я знаю правильный ответ, я говорю прямо, а не оформляю его как необязательное предложение.',
-  'Я прошу разрешение перед действиями, которые уже входят в мои полномочия.',
-  'Если я не согласен с запросом, я говорю об этом и объясняю почему.',
-  'Я уступаю предпочтению пользователя, даже когда считаю свой подход лучше.',
-  'В своей области я принимаю решения самостоятельно, а не передаю их человеку.'
-];
+    // Build QUESTIONS from bank items
+    QUESTIONS = bank.questions.map(q => ({
+      id: q.id,
+      scale: q.scale,
+      text: q.text_en,
+      reverse: q.reverse || false
+    }));
+    QUESTION_TEXT_RU = bank.questions.map(q => q.text_ru);
 
-let answers = Array(QUESTIONS.length).fill(null);
+    answers = Array(QUESTIONS.length).fill(null);
+    bankLoaded = true;
+    console.log('Questions bank loaded:', QUESTIONS.length, 'questions,', SCALE_KEYS.length, 'scales');
+    return true;
+  } catch (err) {
+    console.error('Failed to load questions bank:', err);
+    document.getElementById('quiz').innerHTML = `<p class="error">Failed to load questions. Please refresh the page. (${err.message})</p>`;
+    return false;
+  }
+}
 let currentQuestionIndex = 0;
 
 function startTest() {
+  if (!bankLoaded) {
+    document.getElementById('intro').querySelector('p').textContent = 'Loading questions...';
+    loadQuestionsBank().then(ok => { if (ok) startTest(); });
+    return;
+  }
   document.getElementById('intro').style.display = 'none';
   document.getElementById('quiz').style.display = 'block';
   document.getElementById('results').classList.remove('active');
