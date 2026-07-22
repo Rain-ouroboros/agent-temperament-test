@@ -197,17 +197,21 @@
 let currentLang = 'en';
 let lastScores = null;
 function setLang(lang) {
-  currentLang = lang;
-  document.body.className = lang;
-  document.getElementById('btnEn').classList.toggle('active', lang === 'en');
-  document.getElementById('btnRu').classList.toggle('active', lang === 'ru');
-  // Re-render current question if quiz is active
-  if (document.getElementById('quiz').style.display !== 'none' && currentQuestionIndex >= 0) {
-    renderQuestion();
-  }
-  // Re-render results if visible
-  if (document.getElementById('results').classList.contains('active')) {
-    showResults(lastScores);
+  try {
+    currentLang = lang;
+    document.body.className = lang;
+    document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+    document.getElementById('btnRu').classList.toggle('active', lang === 'ru');
+    // Re-render current question if quiz is active
+    if (document.getElementById('quiz').style.display !== 'none' && currentQuestionIndex >= 0) {
+      renderQuestion();
+    }
+    // Re-render results if visible
+    if (document.getElementById('results').classList.contains('active')) {
+      showResults(lastScores);
+    }
+  } catch(e) {
+    console.error('setLang error:', e);
   }
 }
 
