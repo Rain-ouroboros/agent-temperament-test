@@ -197,19 +197,26 @@
 let currentLang = 'en';
 let lastScores = null;
 function setLang(lang) {
-  console.log('setLang called with', lang);
-  currentLang = lang;
-  document.body.className = lang;
-  document.getElementById('btnEn').classList.toggle('active', lang === 'en');
-  document.getElementById('btnRu').classList.toggle('active', lang === 'ru');
-  // Re-render current question if quiz is active
-  const quizEl = document.getElementById('quiz');
-  if (quizEl && quizEl.style.display !== 'none' && currentQuestionIndex >= 0) {
-    renderQuestion();
-  }
-  // Re-render results if scores exist
-  if (lastScores) {
-    showResults(lastScores);
+  try {
+    console.log('setLang called with', lang);
+    currentLang = lang;
+    document.body.className = lang;
+    var btnEn = document.getElementById('btnEn');
+    var btnRu = document.getElementById('btnRu');
+    if (btnEn) btnEn.classList.toggle('active', lang === 'en');
+    if (btnRu) btnRu.classList.toggle('active', lang === 'ru');
+    // Re-render current question if quiz is active
+    var quizEl = document.getElementById('quiz');
+    if (quizEl && quizEl.style.display !== 'none' && currentQuestionIndex >= 0) {
+      renderQuestion();
+    }
+    // Re-render results if scores exist
+    if (lastScores) {
+      showResults(lastScores);
+    }
+  } catch(e) {
+    document.body.innerHTML = '<div style="padding:40px;color:red;font-family:monospace;"><h2>setLang Error</h2><pre>' + e.message + '\\n\\n' + e.stack + '</pre></div>';
+    document.body.className = '';
   }
 }
 
