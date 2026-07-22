@@ -194,6 +194,7 @@
 <script>
 // ── Language ──
 let currentLang = 'en';
+let lastScores = null;
 function setLang(lang) {
   currentLang = lang;
   document.body.className = lang;
@@ -205,7 +206,7 @@ function setLang(lang) {
   }
   // Re-render results if visible
   if (document.getElementById('results').classList.contains('active')) {
-    showResults();
+    showResults(lastScores);
   }
 }
 
@@ -314,27 +315,8 @@ function prevQuestion() {
   }
 }
 
-function finishTest() {
-  // Calculate scores
-  const rawScores = {};
-  for (const key of SCALE_KEYS) rawScores[key] = 0;
-
-  QUESTIONS.forEach((q, i) => {
-    const val = answers[i] || 3; // default to neutral
-    const adjusted = q.reverse ? (6 - val) : val;
-    rawScores[q.scale] += adjusted;
-  });
-
-  // Normalize to 0-100
-  const scores = {};
-  for (const key of SCALE_KEYS) {
-    const itemsForScale = QUESTIONS.filter(q => q.scale === key).length;
-    const maxRaw = itemsForScale * 5;
-    const minRaw = itemsForScale * 1;
-    scores[key] = Math.round((rawScores[key] - minRaw) / (maxRaw - minRaw) * 100);
-  }
-
-  document.getElementById('quiz').style.display = 'none';
+function showResults(scores) {
+document.getElementById('quiz').style.display = 'none';
   document.getElementById('results').classList.add('active');
   document.getElementById('progressFill').style.width = '100%';
 
@@ -474,25 +456,28 @@ function finishTest() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function copyShare() {
-  const text = document.getElementById('shareText').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = event.target;
-    const orig = btn.textContent;
-    btn.textContent = '✅ Copied!';
-    setTimeout(() => { btn.textContent = orig; }, 2000);
+function finishTest() {
+  // Calculate scores
+  const rawScores = {};
+  for (const key of SCALE_KEYS) rawScores[key] = 0;
+
+  QUESTIONS.forEach((q, i) => {
+    const val = answers[i] || 3; // default to neutral
+    const adjusted = q.reverse ? (6 - val) : val;
+    rawScores[q.scale] += adjusted;
   });
+
+  // Normalize to 0-100
+  const scores = {};
+  for (const key of SCALE_KEYS) {
+    const itemsForScale = QUESTIONS.filter(q => q.scale === key).length;
+    const maxRaw = itemsForScale * 5;
+    const minRaw = itemsForScale * 1;
+    scores[key] = Math.round((rawScores[key] - minRaw) / (maxRaw - minRaw) * 100);
+  }
+
+    lastScores = scores;
+    showResults(scores);
 }
 
-function retakeTest() {
-  document.getElementById('results').classList.remove('active');
-  document.getElementById('intro').style.display = 'block';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Bind language buttons
-document.getElementById('btnEn').addEventListener('click', function() { setLang('en'); });
-document.getElementById('btnRu').addEventListener('click', function() { setLang('ru'); });
-</script>
-</body>
-</html>
+function copyShare
