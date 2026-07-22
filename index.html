@@ -120,8 +120,8 @@
 <body>
 <div class="container">
   <div class="lang-switch">
-    <button id="btnEn" class="active" onclick="setLang('en')">EN</button>
-    <button id="btnRu" onclick="setLang('ru')">RU</button>
+    <button id="btnEn" class="active">EN</button>
+    <button id="btnRu">RU</button>
   </div>
 
   <h1><span class="en">🧠 Agent Temperament Test</span><span class="ru">🧠 Тест темперамента агента</span></h1>
@@ -489,6 +489,10 @@ function retakeTest() {
   document.getElementById('intro').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+// Bind language buttons
+document.getElementById('btnEn').addEventListener('click', function() { setLang('en'); });
+document.getElementById('btnRu').addEventListener('click', function() { setLang('ru'); });
 </script>
 </body>
 </html>
