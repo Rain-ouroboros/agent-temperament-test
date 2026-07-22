@@ -57,10 +57,10 @@ const SCALES = {
   }
 };
 
-// Which questions are reverse-scored (by index)
-const REVERSE_INDICES = new Set([3, 4, 7, 12, 17, 21, 22, 24]);
+// Derived from questions-bank.json v2.0.0 — single source of truth.
+// Regenerate with: python3 -c "import json; b=json.load(open('questions-bank.json')); print('REVERSE:', sorted(q['id'] for q in b['questions'] if q['reverse'])); print('SCALE:', [q['scale'] for q in sorted(b['questions'], key=lambda x: x['id'])])"
+const REVERSE_INDICES = new Set([2, 3, 4, 7, 12, 17, 22, 23]);
 
-// Question-to-scale mapping
 const QUESTION_SCALE = [
   'operational_stability', 'operational_stability', 'operational_stability', 'operational_stability', 'operational_stability',
   'social_initiation', 'social_initiation', 'social_initiation', 'social_initiation', 'social_initiation',
