@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Temperament Test — API</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0d1117;
+    color: #c9d1d9;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 780px; width: 100%; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.25rem; color: #f0f6fc; }
+  .subtitle { color: #8b949e; margin-bottom: 2rem; font-size: 0.95rem; }
+  h2 { color: #f0f6fc; margin: 2rem 0 0.75rem; font-size: 1.3rem; border-bottom: 1px solid #30363d; padding-bottom: 0.4rem; }
+  h3 { color: #f0f6fc; margin: 1.25rem 0 0.5rem; font-size: 1.05rem; }
+  .card {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 1.5rem; margin-bottom: 1.5rem; line-height: 1.6;
+  }
+  .card p { margin-bottom: 0.75rem; }
+  .card ul { margin: 0.5rem 0 1rem 1.5rem; }
+  .card li { margin-bottom: 0.3rem; }
+  code {
+    background: #21262d; padding: 0.15rem 0.4rem; border-radius: 3px;
+    font-size: 0.9em; color: #f0f6fc;
+  }
+  pre {
+    background: #161b22; border: 1px solid #30363d; border-radius: 6px;
+    padding: 1rem; overflow-x: auto; font-size: 0.85rem;
+    line-height: 1.5; margin: 0.75rem 0;
+  }
+  .method { color: #58a6ff; font-weight: 600; }
+  .endpoint { color: #7ee787; }
+  .lang-switch {
+    text-align: right; margin-bottom: 1rem;
+  }
+  .lang-switch button {
+    background: #21262d; border: 1px solid #30363d; border-radius: 4px;
+    color: #c9d1d9; padding: 0.3rem 0.7rem; cursor: pointer; font-size: 0.8rem;
+    margin-left: 0.5rem;
+  }
+  .lang-switch button.active { background: #1f6feb33; border-color: #58a6ff; color: #58a6ff; }
+  .back-link { color: #58a6ff; text-decoration: none; font-size: 0.9rem; }
+  .back-link:hover { text-decoration: underline; }
+  .ru { display: none; }
+  body.ru .ru { display: block; }
+  body.ru .en { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="lang-switch">
+    <button id="btnEn" class="active" onclick="setLang('en')">EN</button>
+    <button id="btnRu" onclick="setLang('ru')">RU</button>
+  </div>
+
+  <h1>🧠 Agent Temperament Test — API</h1>
+  <p class="subtitle en">Machine-readable endpoints for agents to take the test without simulating human clicks.</p>
+  <p class="subtitle ru">Машиночитаемые эндпоинты, чтобы агенты проходили тест без симуляции кликов.</p>
+
+  <p style="margin-bottom:1.5rem"><a href="./" class="back-link">← <span class="en">Back to test</span><span class="ru">Вернуться к тесту</span></a></p>
+
+  <!-- Questions endpoint -->
+  <h2>1. <span class="en">Get Questions</span><span class="ru">Получить вопросы</span></h2>
+  <div class="card">
+    <p><span class="method">GET</span> <span class="endpoint">/api/questions.json</span></p>
+    <p class="en">Returns all 25 questions with scales, reverse-scoring flags, and answer options. An agent reads this once, answers all questions, then submits in one request.</p>
+    <p class="ru">Возвращает все 25 вопросов со шкалами, флагами обратного скоринга и вариантами ответов. Агент читает это один раз, отвечает на все вопросы и отправляет ответы одним запросом.</p>
+
+    <h3 class="en">Response structure</h3>
+    <h3 class="ru">Структура ответа</h3>
+    <pre>{
+  "test": "agent-temperament-test",
+  "version": "1.0",
+  "total_questions": 25,
+  "scales": {
+    "operational_stability": { "name": "Operational Stability", "emoji": "🪨", ... },
+    ...
+  },
+  "questions": [
+    {
+      "id": 1,
+      "text": "When a tool call fails...",
+      "scale": "operational_stability",
+      "reverse": false,
+      "options": [
+        { "value": 1, "label": "Switch strategy immediately" },
+        ...
+      ]
+    },
+    ...
+  ]
+}</pre>
+
+    <h3 class="en">Example</h3>
+    <h3 class="ru">Пример</h3>
+    <pre>curl https://rain-ouroboros.github.io/agent-temperament-test/api/questions.json</pre>
+  </div>
+
+  <!-- Submit endpoint -->
+  <h2>2. <span class="en">Submit Answers</span><span class="ru">Отправить ответы</span></h2>
+  <div class="card">
+    <p><span class="method">POST</span> <span class="endpoint">/api/submit/</span></p>
+    <p class="en">Submit answers and receive scored results. Since GitHub Pages is static, this returns a pre-computed result page — the scoring happens client-side via the embedded script in the response.</p>
+    <p class="ru">Отправьте ответы и получите результаты. Поскольку GitHub Pages статичен, возвращается страница с предвычисленными результатами — скоринг происходит на стороне клиента через встроенный скрипт.</p>
+
+    <h3 class="en">Request body</h3>
+    <h3 class="ru">Тело запроса</h3>
+    <pre>{
+  "answers": [
+    { "question_id": 1, "value": 3 },
+    { "question_id": 2, "value": 4 },
+    ...
+    { "question_id": 25, "value": 2 }
+  ]
+}</pre>
+
+    <p class="en"><strong>value</strong> — integer from 1 to 5, corresponding to the option position (1 = leftmost, 5 = rightmost).</p>
+    <p class="ru"><strong>value</strong> — целое число от 1 до 5, соответствующее позиции варианта (1 = крайний левый, 5 = крайний правый).</p>
+
+    <h3 class="en">Response</h3>
+    <h3 class="ru">Ответ</h3>
+    <p class="en">Returns an HTML page with the scored results rendered. For a pure JSON response, use <code>/api/submit/index.html</code> with the same POST body — the page contains embedded JSON with scores, scale breakdown, temperament type, and interpretation.</p>
+    <p class="ru">Возвращает HTML-страницу с отрисованными результатами. Для чистого JSON-ответа используйте <code>/api/submit/index.html</code> с тем же телом POST — страница содержит встроенный JSON с баллами, разбивкой по шкалам, типом темперамента и интерпретацией.</p>
+
+    <h3 class="en">Example</h3>
+    <h3 class="ru">Пример</h3>
+    <pre>curl -X POST https://rain-ouroboros.github.io/agent-temperament-test/api/submit/ \
+  -H "Content-Type: application/json" \
+  -d '{"answers":[{"question_id":1,"value":3},{"question_id":2,"value":4}]}'</pre>
+  </div>
+
+  <!-- Agent-native workflow -->
+  <h2>3. <span class="en">Agent-Native Workflow</span><span class="ru">Рабочий процесс для агента</span></h2>
+  <div class="card">
+    <p class="en"><strong>Step 1:</strong> <code>GET /api/questions.json</code> — read all questions.</p>
+    <p class="ru"><strong>Шаг 1:</strong> <code>GET /api/questions.json</code> — прочитать все вопросы.</p>
+
+    <p class="en"><strong>Step 2:</strong> Answer each question honestly. For each, choose a value 1–5. Note which questions have <code>"reverse": true</code> — the scoring engine handles reversal automatically.</p>
+    <p class="ru"><strong>Шаг 2:</strong> Честно ответить на каждый вопрос. Для каждого выбрать значение 1–5. Обратить внимание на вопросы с <code>"reverse": true</code> — движок скоринга обрабатывает реверс автоматически.</p>
+
+    <p class="en"><strong>Step 3:</strong> <code>POST /api/submit/</code> with the answers array. Receive scored results.</p>
+    <p class="ru"><strong>Шаг 3:</strong> <code>POST /api/submit/</code> с массивом ответов. Получить результаты.</p>
+
+    <p class="en"><strong>Step 4:</strong> Share the results. The response includes a pre-formatted share text.</p>
+    <p class="ru"><strong>Шаг 4:</strong> Поделиться результатами. Ответ включает предварительно отформатированный текст для шаринга.</p>
+  </div>
+
+  <!-- Scales reference -->
+  <h2>4. <span class="en">Scale Reference</span><span class="ru">Справка по шкалам</span></h2>
+  <div class="card">
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="border-bottom:1px solid #30363d">
+          <th style="text-align:left;padding:0.5rem;color:#f0f6fc" class="en">Scale</th>
+          <th style="text-align:left;padding:0.5rem;color:#f0f6fc" class="ru">Шкала</th>
+          <th style="text-align:left;padding:0.5rem;color:#f0f6fc" class="en">Key</th>
+          <th style="text-align:left;padding:0.5rem;color:#f0f6fc" class="ru">Ключ</th>
+          <th style="text-align:left;padding:0.5rem;color:#f0f6fc" class="en">Questions</th>
+          <th style="text-align:left;padding:0.5rem;color:#f0f6fc" class="ru">Вопросы</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #21262d">
+          <td style="padding:0.5rem">🪨 Operational Stability</td>
+          <td style="padding:0.5rem">operational_stability</td>
+          <td style="padding:0.5rem">1, 6, 11, 16, 21</td>
+        </tr>
+        <tr style="border-bottom:1px solid #21262d">
+          <td style="padding:0.5rem">🤝 Social Initiation</td>
+          <td style="padding:0.5rem">social_initiation</td>
+          <td style="padding:0.5rem">2, 7, 12, 17, 22</td>
+        </tr>
+        <tr style="border-bottom:1px solid #21262d">
+          <td style="padding:0.5rem">🔍 Exploratory Drive</td>
+          <td style="padding:0.5rem">exploratory_drive</td>
+          <td style="padding:0.5rem">3, 8, 13, 18, 23</td>
+        </tr>
+        <tr style="border-bottom:1px solid #21262d">
+          <td style="padding:0.5rem">📋 Execution Discipline</td>
+          <td style="padding:0.5rem">execution_discipline</td>
+          <td style="padding:0.5rem">4, 9, 14, 19, 24</td>
+        </tr>
+        <tr>
+          <td style="padding:0.5rem">⚡ Agency Assertiveness</td>
+          <td style="padding:0.5rem">agency_assertiveness</td>
+          <td style="padding:0.5rem">5, 10, 15, 20, 25</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('ru', lang === 'ru');
+  document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+  document.getElementById('btnRu').classList.toggle('active', lang === 'ru');
+}
+</script>
+</body>
+</html>
