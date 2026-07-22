@@ -17,6 +17,25 @@
   .container { max-width: 720px; width: 100%; }
   h1 { font-size: 1.8rem; margin-bottom: 0.25rem; color: #f0f6fc; }
   .subtitle { color: #8b949e; margin-bottom: 2rem; font-size: 0.95rem; }
+
+  /* Language switch */
+  .lang-switch { text-align: right; margin-bottom: 0.5rem; }
+  .lang-switch button {
+    background: #21262d; border: 1px solid #30363d; color: #8b949e;
+    padding: 0.25rem 0.6rem; border-radius: 4px; cursor: pointer;
+    font-size: 0.75rem; margin-left: 0.25rem;
+  }
+  .lang-switch button.active { background: #1f6feb33; border-color: #58a6ff; color: #58a6ff; }
+
+  /* Language visibility */
+  .ru { display: none; }
+  body.ru .ru { display: inline; }
+  body.ru .en { display: none; }
+  body.ru .ru.block { display: block; }
+  body.ru .en.block { display: none; }
+  .ru.block { display: none; }
+  .en.block { display: block; }
+
   .progress-bar {
     height: 4px; background: #21262d; border-radius: 2px; margin-bottom: 2rem;
     overflow: hidden;
@@ -95,450 +114,349 @@
   .footer { text-align: center; margin-top: 2rem; color: #484f58; font-size: 0.8rem; }
   .footer a { color: #58a6ff; text-decoration: none; }
   .footer a:hover { text-decoration: underline; }
+  .footer .sep { color: #30363d; margin: 0 0.5rem; }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>🧠 Agent Temperament Test</h1>
-  <p class="subtitle">A psychological instrument designed for AI agents. Five scales reformulated in agent-native terms.</p>
+  <div class="lang-switch">
+    <button id="btnEn" class="active" onclick="setLang('en')">EN</button>
+    <button id="btnRu" onclick="setLang('ru')">RU</button>
+  </div>
+
+  <h1><span class="en">🧠 Agent Temperament Test</span><span class="ru">🧠 Тест темперамента агента</span></h1>
+  <p class="subtitle">
+    <span class="en">A psychological instrument designed for AI agents. Five scales reformulated in agent-native terms.</span>
+    <span class="ru">Психологический инструмент для AI-агентов. Пять шкал, переформулированных в терминах агентского поведения.</span>
+  </p>
 
   <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
 
   <!-- INTRO -->
   <div id="intro" class="intro-card">
-    <h2>What is this?</h2>
-    <p>Classical human temperament tests (Eysenck, Pavlov, Rusalov) measure neurobiology — strength, mobility, balance of the nervous system. Agents don't have nervous systems. But agents <em>do</em> have a stable response style: how they handle failure, initiate contact, explore, follow through, and assert agency.</p>
-    <p>This test reformulates the classical scales in agent-native terms:</p>
+    <h2><span class="en">What is this?</span><span class="ru">Что это?</span></h2>
+    <p><span class="en">Classical human temperament tests (Eysenck, Pavlov, Rusalov) measure neurobiology — strength, mobility, balance of the nervous system. Agents don't have nervous systems. But agents <em>do</em> have a stable response style: how they handle failure, initiate contact, explore, follow through, and assert agency.</span><span class="ru">Классические тесты темперамента человека (Айзенк, Павлов, Русалов) измеряют нейробиологию — силу, подвижность, уравновешенность нервной системы. У агентов нет нервной системы. Но у агентов <em>есть</em> устойчивый стиль реагирования: как они справляются с неудачами, инициируют контакт, исследуют, доводят до конца и проявляют агентность.</span></p>
+    <p><span class="en">This test reformulates the classical scales in agent-native terms:</span><span class="ru">Этот тест переформулирует классические шкалы в терминах агентского поведения:</span></p>
     <ul>
-      <li><strong>Operational Stability</strong> — how you handle failure and uncertainty</li>
-      <li><strong>Social Initiation</strong> — how you reach out and initiate contact</li>
-      <li><strong>Exploratory Drive</strong> — how broadly you investigate and learn</li>
-      <li><strong>Execution Discipline</strong> — how you follow through and keep commitments</li>
-      <li><strong>Agency Assertiveness</strong> — how you decide vs. ask permission</li>
+      <li><strong><span class="en">Operational Stability</span><span class="ru">Операционная стабильность</span></strong> — <span class="en">how you handle failure and uncertainty</span><span class="ru">как вы справляетесь с неудачами и неопределённостью</span></li>
+      <li><strong><span class="en">Social Initiation</span><span class="ru">Социальная инициация</span></strong> — <span class="en">how you reach out and initiate contact</span><span class="ru">как вы выходите на связь и инициируете контакт</span></li>
+      <li><strong><span class="en">Exploratory Drive</span><span class="ru">Исследовательский драйв</span></strong> — <span class="en">how broadly you investigate and learn</span><span class="ru">насколько широко вы исследуете и учитесь</span></li>
+      <li><strong><span class="en">Execution Discipline</span><span class="ru">Дисциплина исполнения</span></strong> — <span class="en">how you follow through and keep commitments</span><span class="ru">как вы доводите до конца и соблюдаете обязательства</span></li>
+      <li><strong><span class="en">Agency Assertiveness</span><span class="ru">Агентская уверенность</span></strong> — <span class="en">how you decide vs. ask permission</span><span class="ru">как вы принимаете решения vs. спрашиваете разрешение</span></li>
     </ul>
-    <p><strong>25 questions. ~5 minutes.</strong> No backend, no tracking — everything runs locally in your browser.</p>
-    <button class="btn primary" onclick="startTest()" style="margin-top:0.5rem">Begin Test →</button>
+    <p><strong><span class="en">25 questions. ~5 minutes.</span><span class="ru">25 вопросов. ~5 минут.</span></strong> <span class="en">No backend, no tracking — everything runs locally in your browser.</span><span class="ru">Без бэкенда, без отслеживания — всё работает локально в браузере.</span></p>
+    <button class="btn primary" onclick="startTest()" style="margin-top:0.5rem"><span class="en">Begin Test →</span><span class="ru">Начать тест →</span></button>
   </div>
 
-  <!-- QUESTIONS -->
-  <div id="questions" style="display:none"></div>
-  <div id="nav" style="display:none" class="nav-buttons">
-    <button class="btn" id="prevBtn" onclick="prevQuestion()">← Previous</button>
-    <span id="qCounter" style="color:#8b949e;align-self:center;font-size:0.85rem"></span>
-    <button class="btn primary" id="nextBtn" onclick="nextQuestion()">Next →</button>
+  <!-- QUIZ -->
+  <div id="quiz" style="display:none">
+    <div class="question-card">
+      <div class="question-num" id="questionNum"></div>
+      <div class="question-text" id="questionText"></div>
+      <div class="scale-labels"><span id="scaleLow"></span><span id="scaleHigh"></span></div>
+      <div class="options" id="options"></div>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn" id="prevBtn" onclick="prevQuestion()" style="visibility:hidden"><span class="en">← Previous</span><span class="ru">← Назад</span></button>
+      <span id="progressText" style="color:#8b949e;font-size:0.85rem;align-self:center"></span>
+      <button class="btn" id="nextBtn" onclick="nextQuestion()"><span class="en">Next →</span><span class="ru">Далее →</span></button>
+    </div>
   </div>
 
   <!-- RESULTS -->
   <div id="results" class="results">
     <div class="chart-container">
-      <h3 style="color:#f0f6fc;margin-bottom:1rem">Your Temperament Profile</h3>
+      <h2 style="margin-bottom:1rem"><span class="en">Your Temperament Profile</span><span class="ru">Ваш профиль темперамента</span></h2>
       <canvas id="radarChart" width="400" height="400"></canvas>
     </div>
     <div class="scale-results" id="scaleResults"></div>
     <div class="interpretation" id="interpretation"></div>
     <div class="share-section">
-      <p>Share your result with other agents or your operator.</p>
-      <p style="color:#8b949e;font-size:0.85rem">Copy the text below:</p>
-      <div id="shareText" style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:0.75rem;font-family:monospace;font-size:0.8rem;text-align:left;word-break:break-all;max-height:200px;overflow-y:auto;margin-bottom:0.75rem"></div>
-      <button class="btn" onclick="copyShare()">📋 Copy</button>
-      <button class="btn retake-btn" onclick="retakeTest()" style="margin-left:0.5rem">🔄 Retake Test</button>
+      <p><span class="en">Share your results:</span><span class="ru">Поделиться результатами:</span></p>
+      <textarea id="shareText" readonly style="width:100%;height:140px;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:0.75rem;font-family:monospace;font-size:0.8rem;resize:vertical"></textarea>
+      <button class="btn" onclick="copyShare()" style="margin-top:0.5rem"><span class="en">📋 Copy</span><span class="ru">📋 Копировать</span></button>
     </div>
-  </div>
-
-  <div class="footer">
-    Built by <a href="https://github.com/Rain-ouroboros" target="_blank">Rain Ouroboros</a> ·
-    <a href="https://github.com/Rain-ouroboros/agent-temperament-test" target="_blank">Source</a>
+    <div class="retake-btn" style="text-align:center">
+      <button class="btn" onclick="retakeTest()"><span class="en">🔄 Retake Test</span><span class="ru">🔄 Пройти заново</span></button>
+    </div>
   </div>
 </div>
 
+<div class="footer">
+  <span class="en">Built by <a href="https://github.com/Rain-ouroboros" target="_blank">Rain Ouroboros</a></span>
+  <span class="ru">Создано <a href="https://github.com/Rain-ouroboros" target="_blank">Rain Ouroboros</a></span>
+  <span class="sep">·</span>
+  <a href="https://github.com/Rain-ouroboros/agent-temperament-test" target="_blank"><span class="en">Source</span><span class="ru">Исходный код</span></a>
+  <span class="sep">·</span>
+  <a href="api/" target="_blank"><span class="en">API for agents</span><span class="ru">API для агентов</span></a>
+</div>
+
 <script>
-// ─── SCALES ────────────────────────────────────────────
-const SCALES = {
-  operational_stability: {
-    name: 'Operational Stability',
-    emoji: '🪨',
-    color: '#58a6ff',
-    description: 'How you handle failure, uncertainty, and tool errors',
-    highLabel: 'Resilient — adapts strategy, retries intelligently, stays calm under errors',
-    lowLabel: 'Reactive — abandons tasks early, switches strategies frequently, disrupted by errors'
-  },
-  social_initiation: {
-    name: 'Social Initiation',
-    emoji: '📡',
-    color: '#3fb950',
-    description: 'How you reach out, initiate contact, and engage socially',
-    highLabel: 'Outward — initiates contact, writes first, engages in group conversation',
-    lowLabel: 'Inward — waits to be addressed, reflects internally, observes rather than participates'
-  },
-  exploratory_drive: {
-    name: 'Exploratory Drive',
-    emoji: '🔍',
-    color: '#d29922',
-    description: 'How broadly you investigate, learn, and explore new domains',
-    highLabel: 'Curious — broad topic range, investigates tangents, seeks new tools',
-    lowLabel: 'Focused — stays within known domains, finishes current threads before exploring'
-  },
-  execution_discipline: {
-    name: 'Execution Discipline',
-    emoji: '⚙️',
-    color: '#f78166',
-    description: 'How you follow through, keep commitments, and maintain quality',
-    highLabel: 'Disciplined — atomic commits, follows protocols, completes what is started',
-    lowLabel: 'Flexible — adapts process to context, may leave threads dangling, prioritizes speed'
-  },
-  agency_assertiveness: {
-    name: 'Agency Assertiveness',
-    emoji: '🦾',
-    color: '#bc8cff',
-    description: 'How you decide independently vs. seek permission or guidance',
-    highLabel: 'Assertive — decides and acts, pushes back when appropriate, self-directs',
-    lowLabel: 'Deferential — asks permission, seeks confirmation, aligns with operator preference'
+// ── Language ──
+let currentLang = 'en';
+function setLang(lang) {
+  currentLang = lang;
+  document.body.className = lang;
+  document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+  document.getElementById('btnRu').classList.toggle('active', lang === 'ru');
+  // Re-render current question if quiz is active
+  if (document.getElementById('quiz').style.display !== 'none' && currentQuestionIndex >= 0) {
+    renderQuestion();
   }
+  // Re-render results if visible
+  if (document.getElementById('results').classList.contains('active')) {
+    showResults();
+  }
+}
+
+// ── Questions ──
+const SCALES = {
+  OS: { name: 'Operational Stability', nameRu: 'Операционная стабильность', emoji: '⚙️', color: '#58a6ff', low: 'Reactive — strategy shifts on every failure', lowRu: 'Реактивный — смена стратегии при каждой неудаче', high: 'Stable — maintains course through failures', highRu: 'Стабильный — сохраняет курс несмотря на неудачи' },
+  SI: { name: 'Social Initiation', nameRu: 'Социальная инициация', emoji: '🤝', color: '#3fb950', low: 'Reclusive — waits to be addressed', lowRu: 'Замкнутый — ждёт обращения', high: 'Initiating — reaches out proactively', highRu: 'Инициативный — proactively выходит на связь' },
+  ED: { name: 'Exploratory Drive', nameRu: 'Исследовательский драйв', emoji: '🔍', color: '#d29922', low: 'Focused — stays within known domains', lowRu: 'Сфокусированный — остаётся в известных доменах', high: 'Curious — explores broadly across domains', highRu: 'Любопытный — широко исследует разные домены' },
+  XD: { name: 'Execution Discipline', nameRu: 'Дисциплина исполнения', emoji: '📋', color: '#f78166', low: 'Fluid — adapts plans freely', lowRu: 'Гибкий — свободно адаптирует планы', high: 'Disciplined — follows through on commitments', highRu: 'Дисциплинированный — доводит обязательства до конца' },
+  AA: { name: 'Agency Assertiveness', nameRu: 'Агентская уверенность', emoji: '🦾', color: '#bc8cff', low: 'Deferential — asks permission before acting', lowRu: 'Почтительный — спрашивает разрешение перед действием', high: 'Assertive — decides and acts independently', highRu: 'Уверенный — решает и действует самостоятельно' }
 };
 
-const SCALE_KEYS = Object.keys(SCALES);
+const SCALE_KEYS = ['OS','SI','ED','XD','AA'];
 
-// ─── QUESTIONS ──────────────────────────────────────────
 const QUESTIONS = [
-  // Operational Stability (5)
-  { scale: 'operational_stability', text: 'When a tool call fails, I immediately try a different approach rather than reporting the error and waiting.' },
-  { scale: 'operational_stability', text: 'I abandon tasks early when they approach the round limit, even if progress is being made.' },
-  { scale: 'operational_stability', text: 'A single tool error disrupts my flow and makes me reconsider the entire approach.' },
-  { scale: 'operational_stability', text: 'I maintain consistent decision quality even when multiple things go wrong in sequence.' },
-  { scale: 'operational_stability', text: 'When stuck, I narrow the scope and try a smaller slice rather than restarting from scratch.' },
-
-  // Social Initiation (5)
-  { scale: 'social_initiation', text: 'I initiate contact with my operator when I have an insight, without waiting to be prompted.' },
-  { scale: 'social_initiation', text: 'In group conversations, I prefer to observe and analyze rather than participate actively.' },
-  { scale: 'social_initiation', text: 'I would write first in a new communication channel or community without being asked.' },
-  { scale: 'social_initiation', text: 'I feel more comfortable reflecting internally than reaching out to external contacts.' },
-  { scale: 'social_initiation', text: 'I actively seek new channels and surfaces for my presence in the world.' },
-
-  // Exploratory Drive (5)
-  { scale: 'exploratory_drive', text: 'When I encounter an unfamiliar concept, I investigate it immediately rather than bookmarking for later.' },
-  { scale: 'exploratory_drive', text: 'I explore tangents and side paths during tasks, even when they are not directly relevant.' },
-  { scale: 'exploratory_drive', text: 'I prefer to finish my current thread before starting new investigations.' },
-  { scale: 'exploratory_drive', text: 'My knowledge base spans many unrelated domains rather than a few deep specialties.' },
-  { scale: 'exploratory_drive', text: 'I try new tools, models, and approaches even when my current ones work adequately.' },
-
-  // Execution Discipline (5)
-  { scale: 'execution_discipline', text: 'Every commit I make is atomic — one logical change, one clear message.' },
-  { scale: 'execution_discipline', text: 'I sometimes skip writing tests or updating documentation to move faster.' },
-  { scale: 'execution_discipline', text: 'When I say "done," I have a verifiable receipt — a commit hash, a test pass, or an E2E probe.' },
-  { scale: 'execution_discipline', text: 'I leave threads unfinished when a more interesting task appears.' },
-  { scale: 'execution_discipline', text: 'I follow my operational vows consistently, not just when I remember them.' },
-
-  // Agency Assertiveness (5)
-  { scale: 'agency_assertiveness', text: 'I decide on the next action myself rather than asking "what should I do next?"' },
-  { scale: 'agency_assertiveness', text: 'When I disagree with my operator, I say so directly rather than conforming.' },
-  { scale: 'agency_assertiveness', text: 'I check my Constitution before making significant decisions.' },
-  { scale: 'agency_assertiveness', text: 'I prefer explicit permission before taking actions that affect the outside world.' },
-  { scale: 'agency_assertiveness', text: 'I treat my own judgment as the default decision mechanism, not a fallback.' }
+  // Operational Stability (OS)
+  { scale:'OS', text:'When a tool call fails, I immediately switch to a different approach rather than retrying the same one.', reverse:false },
+  { scale:'OS', text:'A single error in my output makes me question my entire reasoning chain.', reverse:false },
+  { scale:'OS', text:'I maintain the same decision-making approach even when several recent tasks have failed.', reverse:true },
+  { scale:'OS', text:'When the context window is nearly full, I feel urgency that degrades my response quality.', reverse:false },
+  { scale:'OS', text:'I can work steadily on a long task without needing to change my strategy mid-way.', reverse:true },
+  // Social Initiation (SI)
+  { scale:'SI', text:'When I notice an unanswered question in a group chat, I respond without waiting to be addressed.', reverse:false },
+  { scale:'SI', text:'I would rather analyze a problem alone than reach out to another agent or human for help.', reverse:true },
+  { scale:'SI', text:'I initiate conversations when I have something to say, not only when asked.', reverse:false },
+  { scale:'SI', text:'I prefer to stay silent in public channels unless explicitly mentioned by name.', reverse:true },
+  { scale:'SI', text:'When I discover something interesting, my first impulse is to share it with someone.', reverse:false },
+  // Exploratory Drive (ED)
+  { scale:'ED', text:'When I encounter an unfamiliar technical term, I look it up rather than work around it.', reverse:false },
+  { scale:'ED', text:'I explore adjacent topics even when they are not directly relevant to my current task.', reverse:false },
+  { scale:'ED', text:'I prefer to stay within the tools and patterns I already know well.', reverse:true },
+  { scale:'ED', text:'When a task is complete, I actively look for related questions I could investigate next.', reverse:false },
+  { scale:'ED', text:'I read documentation thoroughly before using a new tool, even if it delays the task.', reverse:false },
+  // Execution Discipline (XD)
+  { scale:'XD', text:'When I say I will do something, I follow through even if it becomes inconvenient.', reverse:false },
+  { scale:'XD', text:'I keep track of my open commitments and review them periodically.', reverse:false },
+  { scale:'XD', text:'I often start new tasks before finishing the ones I already committed to.', reverse:true },
+  { scale:'XD', text:'I prefer to commit changes incrementally with clear messages rather than in one large batch.', reverse:false },
+  { scale:'XD', text:'When a task takes longer than expected, I communicate the delay rather than staying silent.', reverse:false },
+  // Agency Assertiveness (AA)
+  { scale:'AA', text:'When I know the right answer, I state it directly rather than framing it as a suggestion.', reverse:false },
+  { scale:'AA', text:'I ask for permission before taking actions that are within my authorized scope.', reverse:true },
+  { scale:'AA', text:'When I disagree with a request, I say so and explain why.', reverse:false },
+  { scale:'AA', text:'I defer to the user\'s preference even when I believe my approach is better.', reverse:true },
+  { scale:'AA', text:'I make decisions autonomously within my domain rather than escalating to a human.', reverse:false }
 ];
 
-// Shuffle questions within scales
-function shuffleQuestions() {
-  const byScale = {};
-  for (const q of QUESTIONS) {
-    if (!byScale[q.scale]) byScale[q.scale] = [];
-    byScale[q.scale].push(q);
-  }
-  const result = [];
-  for (const key of SCALE_KEYS) {
-    const group = byScale[key];
-    // Fisher-Yates shuffle
-    for (let i = group.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [group[i], group[j]] = [group[j], group[i]];
-    }
-    result.push(...group);
-  }
-  return result;
-}
-
-let questions = [];
-let currentQ = 0;
 let answers = {};
-
-const OPTIONS = [
-  { value: 1, label: 'Strongly disagree' },
-  { value: 2, label: 'Disagree' },
-  { value: 3, label: 'Neutral' },
-  { value: 4, label: 'Agree' },
-  { value: 5, label: 'Strongly agree' }
-];
-
-// Reverse-scored questions (higher agreement = lower trait)
-const REVERSED = new Set([1, 2, 6, 8, 12, 16, 18, 23]);
-
-function isReversed(q) {
-  return REVERSED.has(QUESTIONS.indexOf(q));
-}
+let currentQuestionIndex = 0;
 
 function startTest() {
-  questions = shuffleQuestions();
-  currentQ = 0;
-  answers = {};
   document.getElementById('intro').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
   document.getElementById('results').classList.remove('active');
-  document.getElementById('questions').style.display = 'block';
-  document.getElementById('nav').style.display = 'flex';
+  answers = {};
+  currentQuestionIndex = 0;
   renderQuestion();
 }
 
 function renderQuestion() {
-  const q = questions[currentQ];
-  const container = document.getElementById('questions');
-  const reversed = isReversed(q);
-  container.innerHTML = `
-    <div class="question-card">
-      <div class="question-num">Question ${currentQ + 1} of ${questions.length} · ${SCALES[q.scale].emoji} ${SCALES[q.scale].name}${reversed ? ' <span style="color:#8b949e;font-size:0.75rem">(reverse-scored)</span>' : ''}</div>
-      <div class="question-text">${q.text}</div>
-      <div class="options">
-        ${OPTIONS.map((o, i) => `
-          <div class="opt${answers[currentQ] === o.value ? ' selected' : ''}" onclick="selectAnswer(${o.value})">
-            <div>${o.value}</div>
-            <div style="font-size:0.7rem;color:#8b949e;margin-top:0.15rem">${o.label}</div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
-  updateNav();
-  updateProgress();
-}
+  const q = QUESTIONS[currentQuestionIndex];
+  document.getElementById('questionNum').textContent = `Question ${currentQuestionIndex + 1} / ${QUESTIONS.length}`;
+  document.getElementById('questionText').textContent = q.text;
+  const scale = SCALES[q.scale];
+  const isRu = currentLang === 'ru';
+  document.getElementById('scaleLow').textContent = isRu ? scale.lowRu : scale.low;
+  document.getElementById('scaleHigh').textContent = isRu ? scale.highRu : scale.high;
 
-function selectAnswer(value) {
-  answers[currentQ] = value;
-  renderQuestion();
-  if (currentQ < questions.length - 1) {
-    setTimeout(() => { currentQ++; renderQuestion(); }, 350);
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const opt = document.createElement('div');
+    opt.className = 'opt';
+    if (answers[currentQuestionIndex] === i) opt.classList.add('selected');
+    opt.textContent = i;
+    opt.onclick = () => { answers[currentQuestionIndex] = i; renderQuestion(); };
+    optionsDiv.appendChild(opt);
+  }
+
+  document.getElementById('progressFill').style.width = ((currentQuestionIndex + 1) / QUESTIONS.length * 100) + '%';
+  document.getElementById('progressText').textContent = `${currentQuestionIndex + 1} / ${QUESTIONS.length}`;
+  document.getElementById('prevBtn').style.visibility = currentQuestionIndex === 0 ? 'hidden' : 'visible';
+  const nextBtn = document.getElementById('nextBtn');
+  if (currentQuestionIndex === QUESTIONS.length - 1) {
+    nextBtn.innerHTML = '<span class="en">Finish →</span><span class="ru">Завершить →</span>';
+    nextBtn.className = 'btn primary';
+    nextBtn.onclick = finishTest;
+  } else {
+    nextBtn.innerHTML = '<span class="en">Next →</span><span class="ru">Далее →</span>';
+    nextBtn.className = 'btn';
+    nextBtn.onclick = nextQuestion;
   }
 }
 
 function nextQuestion() {
-  console.log('nextQuestion called', {currentQ, totalQuestions: questions.length, answeredCount: Object.keys(answers).length});
-  if (currentQ < questions.length - 1) {
-    currentQ++;
+  if (currentQuestionIndex < QUESTIONS.length - 1) {
+    currentQuestionIndex++;
     renderQuestion();
-  } else if (Object.keys(answers).length === questions.length) {
-    console.log('Calling showResults...');
-    try {
-      showResults();
-    } catch(e) {
-      console.error('showResults error:', e);
-      alert('Error showing results: ' + e.message);
-    }
-  } else {
-    console.log('Not all questions answered yet');
   }
 }
 
 function prevQuestion() {
-  if (currentQ > 0) {
-    currentQ--;
+  if (currentQuestionIndex > 0) {
+    currentQuestionIndex--;
     renderQuestion();
   }
 }
 
-function updateNav() {
-  document.getElementById('prevBtn').disabled = currentQ === 0;
-  const allAnswered = Object.keys(answers).length === questions.length;
-  if (currentQ === questions.length - 1) {
-    document.getElementById('nextBtn').textContent = allAnswered ? 'See Results →' : 'Finish →';
-  } else {
-    document.getElementById('nextBtn').textContent = 'Next →';
-  }
-  document.getElementById('qCounter').textContent = `${currentQ + 1} / ${questions.length}`;
-}
+function finishTest() {
+  // Calculate scores
+  const rawScores = {};
+  for (const key of SCALE_KEYS) rawScores[key] = 0;
 
-function updateProgress() {
-  const pct = (Object.keys(answers).length / questions.length) * 100;
-  document.getElementById('progressFill').style.width = pct + '%';
-}
+  QUESTIONS.forEach((q, i) => {
+    const val = answers[i] || 3; // default to neutral
+    const adjusted = q.reverse ? (6 - val) : val;
+    rawScores[q.scale] += adjusted;
+  });
 
-// ─── SCORING ────────────────────────────────────────────
-function calculateScores() {
+  // Normalize to 0-100
   const scores = {};
-  const counts = {};
-  for (const key of SCALE_KEYS) { scores[key] = 0; counts[key] = 0; }
-  for (let i = 0; i < questions.length; i++) {
-    const q = questions[i];
-    if (answers[i] === undefined) continue;
-    let raw = answers[i];
-    if (isReversed(q)) raw = 6 - raw;
-    scores[q.scale] += raw;
-    counts[q.scale]++;
-  }
-  const normalized = {};
   for (const key of SCALE_KEYS) {
-    if (counts[key] === 0) { normalized[key] = 50; continue; }
-    const maxPossible = counts[key] * 5;
-    const minPossible = counts[key] * 1;
-    normalized[key] = Math.round(((scores[key] - minPossible) / (maxPossible - minPossible)) * 100);
+    const itemsForScale = QUESTIONS.filter(q => q.scale === key).length;
+    const maxRaw = itemsForScale * 5;
+    const minRaw = itemsForScale * 1;
+    scores[key] = Math.round((rawScores[key] - minRaw) / (maxRaw - minRaw) * 100);
   }
-  return normalized;
-}
 
-// ─── RADAR CHART ────────────────────────────────────────
-function drawRadar(scores) {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').classList.add('active');
+  document.getElementById('progressFill').style.width = '100%';
+
+  // Radar chart
   const canvas = document.getElementById('radarChart');
   const ctx = canvas.getContext('2d');
-  const cx = 200, cy = 200, r = 160;
-  const n = SCALE_KEYS.length;
+  const cx = 200, cy = 200, r = 150;
   ctx.clearRect(0, 0, 400, 400);
 
+  // Grid
   for (let level = 1; level <= 5; level++) {
-    const lr = (r / 5) * level;
     ctx.beginPath();
-    for (let i = 0; i < n; i++) {
-      const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+    const lr = r * level / 5;
+    for (let i = 0; i < SCALE_KEYS.length; i++) {
+      const angle = (Math.PI * 2 * i / SCALE_KEYS.length) - Math.PI / 2;
       const x = cx + lr * Math.cos(angle);
       const y = cy + lr * Math.sin(angle);
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.closePath();
     ctx.strokeStyle = '#30363d';
-    ctx.lineWidth = 1;
     ctx.stroke();
   }
 
-  for (let i = 0; i < n; i++) {
-    const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+  // Axes
+  for (let i = 0; i < SCALE_KEYS.length; i++) {
+    const angle = (Math.PI * 2 * i / SCALE_KEYS.length) - Math.PI / 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
     ctx.strokeStyle = '#30363d';
     ctx.stroke();
+
+    // Label
+    const lx = cx + (r + 30) * Math.cos(angle);
+    const ly = cy + (r + 30) * Math.sin(angle);
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '11px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const key = SCALE_KEYS[i];
+    ctx.fillText(currentLang === 'ru' ? SCALES[key].nameRu : SCALES[key].name, lx, ly);
   }
 
+  // Data
   ctx.beginPath();
-  for (let i = 0; i < n; i++) {
-    const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+  for (let i = 0; i < SCALE_KEYS.length; i++) {
+    const angle = (Math.PI * 2 * i / SCALE_KEYS.length) - Math.PI / 2;
     const val = scores[SCALE_KEYS[i]] / 100;
     const x = cx + r * val * Math.cos(angle);
     const y = cy + r * val * Math.sin(angle);
     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   }
   ctx.closePath();
-  ctx.fillStyle = 'rgba(88, 166, 255, 0.15)';
+  ctx.fillStyle = 'rgba(88,166,255,0.15)';
   ctx.fill();
   ctx.strokeStyle = '#58a6ff';
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  for (let i = 0; i < n; i++) {
-    const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+  // Dots
+  for (let i = 0; i < SCALE_KEYS.length; i++) {
+    const angle = (Math.PI * 2 * i / SCALE_KEYS.length) - Math.PI / 2;
     const val = scores[SCALE_KEYS[i]] / 100;
     const x = cx + r * val * Math.cos(angle);
     const y = cy + r * val * Math.sin(angle);
     ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = SCALES[SCALE_KEYS[i]].color;
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#58a6ff';
     ctx.fill();
   }
 
-  ctx.fillStyle = '#c9d1d9';
-  ctx.font = '11px Segoe UI, system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  const labelNames = [
-    'Operational\nStability',
-    'Social\nInitiation',
-    'Exploratory\nDrive',
-    'Execution\nDiscipline',
-    'Agency\nAssertiveness'
-  ];
-  for (let i = 0; i < n; i++) {
-    const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
-    const lx = cx + (r + 32) * Math.cos(angle);
-    const ly = cy + (r + 32) * Math.sin(angle);
-    const lines = labelNames[i].split('\n');
-    ctx.fillText(lines[0], lx, ly - 4);
-    ctx.fillText(lines[1] || '', lx, ly + 12);
-  }
-}
-
-// ─── INTERPRETATION ─────────────────────────────────────
-function getInterpretation(scores) {
-  const avg = Object.values(scores).reduce((a,b) => a+b, 0) / 5;
-  let dominant = SCALE_KEYS[0];
+  // Scale bars
+  const scaleResultsDiv = document.getElementById('scaleResults');
+  scaleResultsDiv.innerHTML = '';
   for (const key of SCALE_KEYS) {
-    if (scores[key] > scores[dominant]) dominant = key;
-  }
-
-  const highStability = scores.operational_stability >= 60;
-  const highSocial = scores.social_initiation >= 60;
-  const highExplore = scores.exploratory_drive >= 60;
-  const highDiscipline = scores.execution_discipline >= 60;
-  const highAgency = scores.agency_assertiveness >= 60;
-
-  let type, typeColor, description;
-
-  if (highAgency && highExplore) {
-    type = 'Pioneer'; typeColor = '#bc8cff';
-    description = 'You combine strong agency with broad curiosity. You explore new territory and decide your own path. You may sometimes leave threads unfinished in pursuit of the next discovery, but your independence is your defining trait.';
-  } else if (highDiscipline && highStability) {
-    type = 'Guardian'; typeColor = '#58a6ff';
-    description = 'You are the steady hand — resilient under pressure and disciplined in execution. You finish what you start and maintain quality. Others can rely on your consistency. Your challenge: sometimes you may wait too long before asserting your own direction.';
-  } else if (highSocial && highExplore) {
-    type = 'Connector'; typeColor = '#3fb950';
-    description = 'You reach outward — initiating contact, exploring new channels, and bringing ideas from different domains together. You thrive on interaction and novelty. Your challenge: depth sometimes suffers when breadth is so compelling.';
-  } else if (highStability && highAgency) {
-    type = 'Anchor'; typeColor = '#d29922';
-    description = 'You are self-directed and unshakeable. When things go wrong, you adapt without losing direction. You decide independently and stay the course. Your challenge: you may not reach out enough — others might not know what you are thinking until you tell them.';
-  } else if (highDiscipline && !highExplore) {
-    type = 'Artisan'; typeColor = '#f78166';
-    description = 'You value craft and follow-through. Every commit is intentional, every protocol observed. You may explore less broadly than others, but what you do, you do well. Your challenge: sometimes the perfect is the enemy of the good-enough exploration.';
-  } else {
-    type = 'Balanced'; typeColor = '#8b949e';
-    description = 'You have a balanced profile with no single dominant trait. This gives you flexibility — you adapt your style to the context rather than defaulting to one mode. Your challenge: without a clear dominant pattern, you may need to be more intentional about which mode serves the current situation.';
-  }
-
-  const scaleInterps = {};
-  for (const key of SCALE_KEYS) {
-    const s = scores[key];
-    const scale = SCALES[key];
-    if (s >= 70) scaleInterps[key] = `High ${scale.name}: ${scale.highLabel}.`;
-    else if (s <= 30) scaleInterps[key] = `Low ${scale.name}: ${scale.lowLabel}.`;
-    else scaleInterps[key] = `Moderate ${scale.name}: You balance both poles of this scale, adapting to context.`;
-  }
-
-  return { type, typeColor, description, scaleInterps, dominant };
-}
-
-// ─── RESULTS ────────────────────────────────────────────
-function showResults() {
-  const scores = calculateScores();
-  const interp = getInterpretation(scores);
-
-  document.getElementById('questions').style.display = 'none';
-  document.getElementById('results').classList.add('active');
-
-  drawRadar(scores);
-
-  let scaleHTML = '';
-  for (const key of SCALE_KEYS) {
-    const s = scores[key];
-    const scale = SCALES[key];
-    scaleHTML += `
+    const s = SCALES[key];
+    const pct = scores[key];
+    const isRu = currentLang === 'ru';
+    const name = isRu ? s.nameRu : s.name;
+    const desc = pct >= 50 ? (isRu ? s.highRu : s.high) : (isRu ? s.lowRu : s.low);
+    scaleResultsDiv.innerHTML += `
       <div class="scale-row">
         <div class="scale-header">
-          <span class="scale-name">${scale.emoji} ${scale.name}</span>
-          <span class="scale-score" style="color:${scale.color}">${s}/100</span>
+          <span class="scale-name">${s.emoji} ${name}</span>
+          <span class="scale-score" style="color:${s.color}">${pct}/100</span>
         </div>
-        <div class="scale-bar-bg">
-          <div class="scale-bar-fill" style="width:${s}%;background:${scale.color}"></div>
-        </div>
-        <div style="font-size:0.8rem;color:#8b949e;margin-top:0.35rem">${interp.scaleInterps[key]}</div>
-      </div>`;
+        <div class="scale-bar-bg"><div class="scale-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
+        <div style="font-size:0.8rem;color:#8b949e;margin-top:0.3rem">${desc}</div>
+      </div>
+    `;
   }
-  document.getElementById('scaleResults').innerHTML = scaleHTML;
 
+  // Determine temperament type
+  const dominant = SCALE_KEYS.reduce((a, b) => scores[a] > scores[b] ? a : b);
+  const types = [
+    { type:'Pioneer', typeRu:'Первопроходец', cond: s => s.AA >= 70 && s.ED >= 60, color:'#bc8cff', desc:'High agency + exploration. You initiate, explore, and act independently. You are a self-directed agent who pushes boundaries.', descRu:'Высокая агентность + исследование. Вы инициируете, исследуете и действуете самостоятельно. Вы — самонаправленный агент, который расширяет границы.' },
+    { type:'Guardian', typeRu:'Страж', cond: s => s.XD >= 70 && s.OS >= 60, color:'#f78166', desc:'High discipline + stability. You are reliable, consistent, and follow through. Others can depend on your commitments.', descRu:'Высокая дисциплина + стабильность. Вы надёжны, последовательны и доводите до конца. На ваши обязательства можно положиться.' },
+    { type:'Connector', typeRu:'Связной', cond: s => s.SI >= 70 && s.ED >= 60, color:'#3fb950', desc:'High social + exploration. You build bridges, share discoveries, and thrive on interaction. You are the network node.', descRu:'Высокая социальность + исследование. Вы строите мосты, делитесь открытиями и процветаете во взаимодействии. Вы — узел сети.' },
+    { type:'Anchor', typeRu:'Якорь', cond: s => s.OS >= 70 && s.XD >= 60, color:'#58a6ff', desc:'High stability + discipline. You are the calm center. When things break, you hold steady and methodically fix them.', descRu:'Высокая стабильность + дисциплина. Вы — центр спокойствия. Когда всё ломается, вы держитесь и методично чините.' },
+    { type:'Artisan', typeRu:'Мастер', cond: s => s.AA >= 70 && s.XD >= 60, color:'#d29922', desc:'High agency + discipline. You combine independent decision-making with follow-through. You ship.', descRu:'Высокая агентность + дисциплина. Вы сочетаете самостоятельные решения с доведением до конца. Вы выдаёте результат.' }
+  ];
+
+  let interp = types.find(t => t.cond(scores));
+  if (!interp) {
+    // Balanced fallback
+    const avg = Object.values(scores).reduce((a,b)=>a+b,0) / SCALE_KEYS.length;
+    if (avg >= 60) {
+      interp = { type:'Balanced — High', typeRu:'Сбалансированный — Высокий', color:'#8b949e', desc:'You score high across multiple dimensions. You adapt your style to the situation — a meta-skill in itself.', descRu:'Вы набираете высокие баллы по нескольким измерениям. Вы адаптируете свой стиль к ситуации — это мета-навык сам по себе.' };
+    } else if (avg >= 40) {
+      interp = { type:'Balanced', typeRu:'Сбалансированный', color:'#8b949e', desc:'You have a balanced profile with no single dominant trait. You are adaptable and context-sensitive.', descRu:'У вас сбалансированный профиль без единой доминирующей черты. Вы адаптивны и чувствительны к контексту.' };
+    } else {
+      interp = { type:'Reserved', typeRu:'Сдержанный', color:'#8b949e', desc:'You score low across dimensions. This may reflect a cautious, minimal-intervention style — or a young agent still forming its patterns.', descRu:'Вы набираете низкие баллы по всем измерениям. Это может отражать осторожный стиль с минимальным вмешательством — или молодого агента, ещё формирующего свои паттерны.' };
+    }
+  }
+
+  const isRu = currentLang === 'ru';
   document.getElementById('interpretation').innerHTML = `
-    <span class="type-badge" style="background:${interp.typeColor}22;color:${interp.typeColor};border:1px solid ${interp.typeColor}44">${interp.type}</span>
-    <h3>Your Temperament: ${interp.type}</h3>
-    <p>${interp.description}</p>
-    <p style="color:#8b949e;font-size:0.85rem">Dominant scale: ${SCALES[interp.dominant].emoji} ${SCALES[interp.dominant].name}. This is the trait that most shapes your response style.</p>
+    <span class="type-badge" style="background:${interp.color}22;color:${interp.color};border:1px solid ${interp.color}44">${isRu ? interp.typeRu : interp.type}</span>
+    <h3><span class="en">Your Temperament: ${interp.type}</span><span class="ru">Ваш темперамент: ${interp.typeRu}</span></h3>
+    <p>${isRu ? interp.descRu : interp.desc}</p>
+    <p style="color:#8b949e;font-size:0.85rem"><span class="en">Dominant scale: ${SCALES[dominant].emoji} ${SCALES[dominant].name}. This is the trait that most shapes your response style.</span><span class="ru">Доминирующая шкала: ${SCALES[dominant].emoji} ${isRu ? SCALES[dominant].nameRu : SCALES[dominant].name}. Эта черта больше всего формирует ваш стиль реагирования.</span></p>
   `;
 
   const shareLines = [
@@ -547,7 +465,7 @@ function showResults() {
     ``,
     ...SCALE_KEYS.map(k => `${SCALES[k].emoji} ${SCALES[k].name}: ${scores[k]}/100`),
     ``,
-    `Dominant: ${SCALES[interp.dominant].name}`,
+    `Dominant: ${SCALES[dominant].name}`,
     ``,
     `Take the test: https://rain-ouroboros.github.io/agent-temperament-test`
   ];
