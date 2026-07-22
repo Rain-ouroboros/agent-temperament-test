@@ -236,6 +236,9 @@ async function loadQuestionsBank() {
     const bank = await resp.json();
     if (!bank.questions || !Array.isArray(bank.questions)) throw new Error('Invalid bank format');
 
+    // Save bank globally for scoring
+    QUESTIONS_BANK = bank;
+
     // Build SCALES from bank metadata
     SCALES = {};
     for (const [key, meta] of Object.entries(bank.scales)) {
@@ -320,6 +323,18 @@ function renderQuestion() {
     opt.addEventListener('click', () => selectAnswer(i));
     optionsDiv.appendChild(opt);
   }
+  // N/A button
+  const naBtn = document.createElement('button');
+  naBtn.type = 'button';
+  naBtn.className = 'opt na-opt';
+  naBtn.dataset.answer = '0';
+  const naSelected = answers[currentQuestionIndex] === 0;
+  if (naSelected) naBtn.classList.add('selected');
+  naBtn.setAttribute('aria-pressed', String(naSelected));
+  naBtn.setAttribute('aria-label', isRu ? 'Неприменимо' : 'Not applicable');
+  naBtn.textContent = 'N/A';
+  naBtn.addEventListener('click', () => selectAnswer(0));
+  optionsDiv.appendChild(naBtn);
 
   document.getElementById('progressFill').style.width = ((currentQuestionIndex + 1) / QUESTIONS.length * 100) + '%';
   document.getElementById('progressText').textContent = `${currentQuestionIndex + 1} / ${QUESTIONS.length}`;
@@ -523,27 +538,43 @@ function finishTest() {
     return;
   }
 
-  // Calculate scores
+  // Calculate scores using bank scoring rules
   const rawScores = {};
-  for (const key of SCALE_KEYS) rawScores[key] = 0;
+  const answeredPerScale = {};
+  for (const key of SCALE_KEYS) {
+    rawScores[key] = 0;
+    answeredPerScale[key] = 0;
+  }
+
+  const bankScoring = QUESTIONS_BANK.scoring;
+  const naBehavior = bankScoring.na_behavior || 'exclude_from_scale';
+  const scaleRange = bankScoring.scale_range || { min: 1, max: 5 };
 
   QUESTIONS.forEach((q, i) => {
     const val = answers[i];
-    const adjusted = q.reverse ? (6 - val) : val;
+    if (naBehavior === 'exclude_from_scale' && val === 0) return; // N/A — skip
+    const adjusted = q.reverse ? (scaleRange.max + scaleRange.min - val) : val;
     rawScores[q.scale] += adjusted;
+    answeredPerScale[q.scale] += 1;
   });
 
   // Normalize to 0-100
   const scores = {};
   for (const key of SCALE_KEYS) {
-    const itemsForScale = QUESTIONS.filter(q => q.scale === key).length;
-    const maxRaw = itemsForScale * 5;
-    const minRaw = itemsForScale * 1;
+    const n = answeredPerScale[key];
+    if (n === 0) {
+      scores[key] = null; // not enough data
+      continue;
+    }
+    const maxRaw = n * scaleRange.max;
+    const minRaw = n * scaleRange.min;
     scores[key] = Math.round((rawScores[key] - minRaw) / (maxRaw - minRaw) * 100);
   }
 
+  console.log('finishTest scores', JSON.stringify(scores));
   lastScores = scores;
   showResults(scores);
+  console.log('finishTest done, results visible:', document.getElementById('results').classList.contains('active'));
 }
 
 async function copyShare() {
