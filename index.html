@@ -367,7 +367,7 @@ function renderQuestion() {
 }
 
 function selectAnswer(value) {
-  if (!Number.isInteger(value) || value < 1 || value > 5) return;
+  if (!Number.isInteger(value) || value < 0 || value > 5) return;
   answers[currentQuestionIndex] = value;
   renderQuestion();
 }
