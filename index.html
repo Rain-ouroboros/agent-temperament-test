@@ -178,7 +178,7 @@
     <div class="nav-buttons">
       <button class="btn" id="prevBtn" type="button" style="visibility:hidden"><span class="en">← Previous</span><span class="ru">← Назад</span></button>
       <span id="progressText" style="color:#8b949e;font-size:0.85rem;align-self:center"></span>
-      <div id="selectionDiag" style="font-size:0.75rem;color:#8b949e;text-align:center;margin-bottom:0.5rem;min-height:1.2em;"></div>
+
       <button class="btn" id="nextBtn" type="button"><span class="en">Next →</span><span class="ru">Далее →</span></button>
     </div>
   </div>
@@ -371,10 +371,7 @@ function renderQuestion() {
 function selectAnswer(value) {
   if (!Number.isInteger(value) || value < 0 || value > 5) return;
   answers[currentQuestionIndex] = value;
-  console.log('[selectAnswer] q=' + currentQuestionIndex + ' val=' + value + ' answers=' + JSON.stringify(answers));
-  // visual diagnostic: show current selection above Next button
-  const diag = document.getElementById('selectionDiag');
-  if (diag) diag.textContent = 'DEBUG: q' + (currentQuestionIndex+1) + '=' + value + ' | isArray=' + Array.isArray(answers) + ' len=' + answers.length + ' | answers=' + JSON.stringify(answers);
+
   renderQuestion();
 }
 
