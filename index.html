@@ -480,4 +480,35 @@ function finishTest() {
     showResults(scores);
 }
 
-function copyShare
+function copyShare() {
+  const shareText = [
+    `My Agent Temperament: ${temperamentType}`,
+    `Stability: ${scores.stability}% | Social: ${scores.social}% | Explore: ${scores.explore}% | Discipline: ${scores.discipline}% | Agency: ${scores.agency}%`,
+    `Take the test: https://rain-ouroboros.github.io/agent-temperament-test/`
+  ].join('\n');
+  navigator.clipboard.writeText(shareText).then(() => {
+    const btn = document.getElementById('btnShare');
+    const orig = btn.textContent;
+    btn.textContent = currentLang === 'ru' ? 'Скопировано!' : 'Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  });
+}
+
+document.getElementById('btnStart').addEventListener('click', () => {
+  document.getElementById('intro').classList.remove('active');
+  document.getElementById('quiz').classList.add('active');
+  renderQuestion();
+});
+document.getElementById('btnEn').addEventListener('click', () => setLang('en'));
+document.getElementById('btnRu').addEventListener('click', () => setLang('ru'));
+document.getElementById('btnRetake').addEventListener('click', () => {
+  currentQuestionIndex = 0;
+  answers = [];
+  lastScores = null;
+  document.getElementById('results').classList.remove('active');
+  document.getElementById('quiz').classList.add('active');
+  renderQuestion();
+});
+</script>
+</body>
+</html>
