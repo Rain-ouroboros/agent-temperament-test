@@ -373,7 +373,7 @@ function selectAnswer(value) {
   console.log('[selectAnswer] q=' + currentQuestionIndex + ' val=' + value + ' answers=' + JSON.stringify(answers));
   // visual diagnostic: show current selection above Next button
   const diag = document.getElementById('selectionDiag');
-  if (diag) diag.textContent = 'DEBUG: q' + (currentQuestionIndex+1) + '=' + value + ' | answers=' + JSON.stringify(answers);
+  if (diag) diag.textContent = 'DEBUG: q' + (currentQuestionIndex+1) + '=' + value + ' | isArray=' + Array.isArray(answers) + ' len=' + answers.length + ' | answers=' + JSON.stringify(answers);
   renderQuestion();
 }
 
