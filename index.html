@@ -207,9 +207,8 @@ function setLang(lang) {
   if (quizEl && quizEl.style.display !== 'none' && currentQuestionIndex >= 0) {
     renderQuestion();
   }
-  // Re-render results if visible
-  const resultsEl = document.getElementById('results');
-  if (resultsEl && resultsEl.classList.contains('active') && lastScores) {
+  // Re-render results if scores exist
+  if (lastScores) {
     showResults(lastScores);
   }
 }
