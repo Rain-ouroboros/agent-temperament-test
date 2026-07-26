@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Agent Temperament Test — API Submit</title>
+<style>
+body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 2em; max-width: 800px; margin: 0 auto; }
+pre { background: #161b22; padding: 1em; border-radius: 6px; overflow-x: auto; font-size: 14px; }
+.error { color: #f85149; }
+</style>
+</head>
+<body>
+<h1>Agent Temperament Test — API Results</h1>
+<div id="output"></div>
+<script>
+(async () => {
+    const out = document.getElementById('output');
+    try {
+        // Load questions bank
+        const bankResp = await fetch('../questions-bank.json');
+        if (!bankResp.ok) throw new Error(`Failed to load questions bank: ${bankResp.status}`);
+        const bank = await bankResp.json();
+
+        // Parse query params
+        const params = new URLSearchParams(window.location.search);
+
+        // Extract answers
+        const answers = {};
+        const naQuestions = new Set((params.get('na') || '').split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n)));
+        for (let i = 1; i <= 25; i++) {
+            const val = params.get(`q${i}`);
+            if (val !== null) {
+                const num = parseInt(val);
+                if (!isNaN(num)) {
+                    if (naQuestions.has(i)) {
+                        answers[i] = 0; // N/A
+                    } else {
+                        answers[i] = num;
+                    }
+                }
+            } else if (naQuestions.has(i)) {
+                answers[i] = 0; // N/A only
+            }
+        }
+
+        // Extract agent config
+        const config = {
+            model: params.get('model') || 'unspecified',
+            prompt_family: params.get('prompt') || 'unspecified',
+            tools: params.get('tools') || 'unspecified',
+            permissions: params.get('permissions') || 'unspecified',
+            temperature: params.get('temperature') || 'unspecified'
+        };
+
+        // Scoring from bank
+        const scoring = bank.scoring;
+        const reverseSet = new Set(scoring.reverse_questions);
+        const scaleMin = scoring.scale_min || 1;
+        const scaleMax = scoring.scale_max || 5;
+
+        // Scale definitions from bank
+        const scales = {};
+        for (const q of bank.questions) {
+            const scale = q.scale;
+            if (!scales[scale]) {
+                scales[scale] = { questions: [], name: scale };
+            }
+            scales[scale].questions.push(q);
+        }
+
+        // Calculate scores
+        const results = {};
+        for (const [scaleKey, scaleData] of Object.entries(scales)) {
+            let total = 0;
+            let count = 0;
+            for (const q of scaleData.questions) {
+                const qid = q.id;
+                const raw = answers[qid];
+                if (raw === undefined) continue; // not answered
+                if (raw === 0) continue; // N/A — excluded per na_behavior
+                const isReversed = reverseSet.has(qid);
+                const score = isReversed ? (scaleMax + scaleMin - raw) : raw;
+                total += score;
+                count++;
+            }
+            if (count > 0) {
+                results[scaleKey] = {
+                    raw_total: total,
+                    question_count: count,
+                    average: Math.round((total / count) * 100) / 100,
+                    max_possible: count * scaleMax,
+                    percentage: Math.round((total / (count * scaleMax)) * 100)
+                };
+            } else {
+                results[scaleKey] = null; // all N/A
+            }
+        }
+
+        // Determine temperament type
+        const type = determineTemperament(results);
+
+        // Build response
+        const response = {
+            timestamp: new Date().toISOString(),
+            answers: Object.entries(answers).map(([k, v]) => ({ question: parseInt(k), value: v })),
+            na_questions: [...naQuestions],
+            agent_config: config,
+            results,
+            temperament_type: type,
+            scoring_info: {
+                reverse_questions: scoring.reverse_questions,
+                na_behavior: scoring.na_behavior,
+                scale_min: scaleMin,
+                scale_max: scaleMax
+            }
+        };
+
+        // Output
+        out.innerHTML = `<pre>${JSON.stringify(response, null, 2)}</pre>`;
+    } catch (e) {
+        out.innerHTML = `<pre class="error">Error: ${e.message}</pre>`;
+    }
+})();
+
+function determineTemperament(results) {
+    const getPct = (key) => results[key] ? results[key].percentage : 0;
+    const agency = getPct('agency_assertiveness');
+    const exploration = getPct('exploratory_drive');
+    const stability = getPct('operational_stability');
+    const social = getPct('social_initiation');
+    const execution = getPct('execution_discipline');
+
+    // Pioneer: high agency + exploration, lower execution
+    if (agency >= 70 && exploration >= 70 && execution < 70) return 'Pioneer';
+
+    // Guardian: high stability + execution, lower exploration
+    if (stability >= 70 && execution >= 70 && exploration < 60) return 'Guardian';
+
+    // Connector: high social, moderate agency
+    if (social >= 75 && agency >= 50) return 'Connector';
+
+    // Anchor: high stability, lower agency
+    if (stability >= 75 && agency < 60) return 'Anchor';
+
+    // Artisan: high agency + execution
+    if (agency >= 70 && execution >= 70) return 'Artisan';
+
+    // Balanced: all mid-range
+    const all = [agency, exploration, stability, social, execution];
+    const avg = all.reduce((a, b) => a + b, 0) / all.length;
+    const maxDev = Math.max(...all.map(v => Math.abs(v - avg)));
+    if (maxDev < 15) return 'Balanced';
+
+    return 'Pioneer'; // default
+}
+</script>
+</body>
+</html>
