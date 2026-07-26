@@ -17,7 +17,7 @@ pre { background: #161b22; padding: 1em; border-radius: 6px; overflow-x: auto; f
     const out = document.getElementById('output');
     try {
         // Load questions bank
-        const bankResp = await fetch('../questions-bank.json');
+        const bankResp = await fetch('../../questions-bank.json');
         if (!bankResp.ok) throw new Error(`Failed to load questions bank: ${bankResp.status}`);
         const bank = await bankResp.json();
 
