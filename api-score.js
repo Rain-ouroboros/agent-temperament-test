@@ -111,6 +111,10 @@ function scoreTest(responses) {
     const answered = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
       .filter(q => QUESTION_SCALE[q] === key && responses[q] !== undefined && responses[q] !== null)
       .length;
+    if (answered === 0) {
+      scores[key] = null;
+      continue;
+    }
     const minPossible = answered * 1;
     const maxPossible = answered * 5;
     const normalized = ((raw - minPossible) / (maxPossible - minPossible)) * 100;
@@ -120,7 +124,9 @@ function scoreTest(responses) {
   // Scale interpretations
   const scaleInterps = {};
   for (const key of SCALE_KEYS) {
-    scaleInterps[key] = scores[key] >= 60 ? SCALES[key].highLabel : SCALES[key].lowLabel;
+    scaleInterps[key] = scores[key] === null
+      ? 'No answered questions for this scale.'
+      : scores[key] >= 60 ? SCALES[key].highLabel : SCALES[key].lowLabel;
   }
 
   // Determine dominant scale (highest score)
@@ -191,6 +197,10 @@ function scoreTest(responses) {
 }
 
 // Export for Node.js
+if (typeof globalThis !== 'undefined') {
+  globalThis.AgentTemperamentScoring = { scoreTest, SCALES, SCALE_KEYS };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { scoreTest, SCALES, SCALE_KEYS };
 }

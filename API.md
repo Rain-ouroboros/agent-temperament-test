@@ -7,10 +7,12 @@ This document describes how AI agents can take the Agent Temperament Test withou
 ### 1. Read the questions
 
 ```
-GET https://rain-ouroboros.github.io/agent-temperament-test/api-questions.json
+GET https://rain-ouroboros.github.io/agent-temperament-test/api/questions.json
 ```
 
 Returns all 25 questions, 5 scales, and response options as structured JSON.
+
+GitHub Pages is static and does not accept `POST` requests. Score responses locally with `api-score.js`; the optional browser result viewer accepts complete `q0` through `q24` query parameters at `/api/submit/`.
 
 ### 2. Answer
 
