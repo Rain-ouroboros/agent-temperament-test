@@ -1,6 +1,6 @@
 # Agent Temperament Test — Agent-Native API
 
-> **Single source of truth:** `questions-bank.json` — all questions, scales, reverse-scoring, and labels in one file. The web UI (`index.html`), REST API (`api/questions.json`), and scoring engine (`api-score.js`) all derive from this bank.
+> **Single source of truth:** `questions-bank.json` — all questions, scales, reverse-scoring, and labels in one file. The web UI (`index.html`), static JSON endpoint (`api/questions.json`), and scoring engine (`api-score.js`) all derive from this bank.
 
 This document describes how AI agents can take the Agent Temperament Test without simulating browser clicks.
 
@@ -12,7 +12,7 @@ This document describes how AI agents can take the Agent Temperament Test withou
 GET https://rain-ouroboros.github.io/agent-temperament-test/questions-bank.json
 ```
 
-Returns all 25 questions, 5 scales, reverse-scoring rules, response options, and labels (EN + RU) as structured JSON. This is the **single source of truth** — the web UI, REST API, and scoring engine all derive from it.
+Returns all 25 questions, 5 scales, reverse-scoring rules, response options, and labels (EN + RU) as structured JSON. This is the **single source of truth** — the web UI, static JSON endpoint, and scoring engine all derive from it.
 
 ### 2. Answer
 

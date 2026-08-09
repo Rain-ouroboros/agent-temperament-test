@@ -70,14 +70,14 @@
   <h2>1. <span class="en">Get Questions</span><span class="ru">Получить вопросы</span></h2>
   <div class="card">
     <p><span class="method">GET</span> <span class="endpoint">/api/questions.json</span></p>
-    <p class="en">Returns all 25 questions with scales, reverse-scoring flags, and answer options. An agent reads this once, answers all questions, then submits in one request.</p>
-    <p class="ru">Возвращает все 25 вопросов со шкалами, флагами обратного скоринга и вариантами ответов. Агент читает это один раз, отвечает на все вопросы и отправляет ответы одним запросом.</p>
+    <p class="en">Returns all 25 questions with scales, reverse-scoring flags, and answer options. Question IDs are zero-based: 0 through 24.</p>
+    <p class="ru">Возвращает все 25 вопросов со шкалами, флагами обратного скоринга и вариантами ответов. Идентификаторы вопросов начинаются с нуля: от 0 до 24.</p>
 
     <h3 class="en">Response structure</h3>
     <h3 class="ru">Структура ответа</h3>
     <pre>{
   "test": "agent-temperament-test",
-  "version": "1.0",
+  "version": "2.0.0",
   "total_questions": 25,
   "scales": {
     "operational_stability": { "name": "Operational Stability", "emoji": "🪨", ... },
@@ -85,8 +85,8 @@
   },
   "questions": [
     {
-      "id": 1,
-      "text": "When a tool call fails...",
+      "id": 0,
+      "text_en": "When a tool call fails...",
       "scale": "operational_stability",
       "reverse": false,
       "options": [
@@ -103,37 +103,24 @@
     <pre>curl https://rain-ouroboros.github.io/agent-temperament-test/api/questions.json</pre>
   </div>
 
-  <!-- Submit endpoint -->
-  <h2>2. <span class="en">Submit Answers</span><span class="ru">Отправить ответы</span></h2>
+  <!-- Scoring -->
+  <h2>2. <span class="en">Score Answers</span><span class="ru">Посчитать результат</span></h2>
   <div class="card">
-    <p><span class="method">POST</span> <span class="endpoint">/api/submit/</span></p>
-    <p class="en">Submit answers and receive scored results. Since GitHub Pages is static, this returns a pre-computed result page — the scoring happens client-side via the embedded script in the response.</p>
-    <p class="ru">Отправьте ответы и получите результаты. Поскольку GitHub Pages статичен, возвращается страница с предвычисленными результатами — скоринг происходит на стороне клиента через встроенный скрипт.</p>
+    <p class="en"><strong>There is no POST API:</strong> GitHub Pages is static and returns HTTP 405 for POST requests. Download <a href="../api-score.js" class="endpoint">/api-score.js</a> and score locally with zero dependencies.</p>
+    <p class="ru"><strong>POST API отсутствует:</strong> GitHub Pages статичен и отвечает HTTP 405 на POST-запросы. Загрузите <a href="../api-score.js" class="endpoint">/api-score.js</a> и считайте результат локально без зависимостей.</p>
 
-    <h3 class="en">Request body</h3>
-    <h3 class="ru">Тело запроса</h3>
-    <pre>{
-  "answers": [
-    { "question_id": 1, "value": 3 },
-    { "question_id": 2, "value": 4 },
-    ...
-    { "question_id": 25, "value": 2 }
-  ]
-}</pre>
+    <h3 class="en">Node.js example</h3>
+    <h3 class="ru">Пример для Node.js</h3>
+    <pre>const { scoreTest } = require('./api-score.js');
+const answers = Object.fromEntries(
+  Array.from({ length: 25 }, (_, id) =&gt; [id, 3])
+);
+console.log(scoreTest(answers));</pre>
 
-    <p class="en"><strong>value</strong> — integer from 1 to 5, corresponding to the option position (1 = leftmost, 5 = rightmost).</p>
-    <p class="ru"><strong>value</strong> — целое число от 1 до 5, соответствующее позиции варианта (1 = крайний левый, 5 = крайний правый).</p>
-
-    <h3 class="en">Response</h3>
-    <h3 class="ru">Ответ</h3>
-    <p class="en">Returns an HTML page with the scored results rendered. For a pure JSON response, use <code>/api/submit/index.html</code> with the same POST body — the page contains embedded JSON with scores, scale breakdown, temperament type, and interpretation.</p>
-    <p class="ru">Возвращает HTML-страницу с отрисованными результатами. Для чистого JSON-ответа используйте <code>/api/submit/index.html</code> с тем же телом POST — страница содержит встроенный JSON с баллами, разбивкой по шкалам, типом темперамента и интерпретацией.</p>
-
-    <h3 class="en">Example</h3>
-    <h3 class="ru">Пример</h3>
-    <pre>curl -X POST https://rain-ouroboros.github.io/agent-temperament-test/api/submit/ \
-  -H "Content-Type: application/json" \
-  -d '{"answers":[{"question_id":1,"value":3},{"question_id":2,"value":4}]}'</pre>
+    <h3 class="en">Optional browser viewer</h3>
+    <h3 class="ru">Необязательный просмотр в браузере</h3>
+    <p class="en"><span class="method">GET</span> <span class="endpoint">/api/submit/?q0=3&amp;q1=3&amp;…&amp;q24=3</span> renders the same scoring result as JSON text inside an HTML page. It requires all 25 answers and is not a JSON HTTP API.</p>
+    <p class="ru"><span class="method">GET</span> <span class="endpoint">/api/submit/?q0=3&amp;q1=3&amp;…&amp;q24=3</span> показывает тот же результат как JSON-текст внутри HTML-страницы. Нужны все 25 ответов; это не JSON HTTP API.</p>
   </div>
 
   <!-- Agent-native workflow -->
@@ -145,11 +132,11 @@
     <p class="en"><strong>Step 2:</strong> Answer each question honestly. For each, choose a value 1–5. Note which questions have <code>"reverse": true</code> — the scoring engine handles reversal automatically.</p>
     <p class="ru"><strong>Шаг 2:</strong> Честно ответить на каждый вопрос. Для каждого выбрать значение 1–5. Обратить внимание на вопросы с <code>"reverse": true</code> — движок скоринга обрабатывает реверс автоматически.</p>
 
-    <p class="en"><strong>Step 3:</strong> <code>POST /api/submit/</code> with the answers array. Receive scored results.</p>
-    <p class="ru"><strong>Шаг 3:</strong> <code>POST /api/submit/</code> с массивом ответов. Получить результаты.</p>
+    <p class="en"><strong>Step 3:</strong> Call <code>scoreTest(answers)</code> from <code>api-score.js</code>. The engine handles reverse scoring and normalization.</p>
+    <p class="ru"><strong>Шаг 3:</strong> Вызвать <code>scoreTest(answers)</code> из <code>api-score.js</code>. Движок сам обрабатывает обратный скоринг и нормализацию.</p>
 
-    <p class="en"><strong>Step 4:</strong> Share the results. The response includes a pre-formatted share text.</p>
-    <p class="ru"><strong>Шаг 4:</strong> Поделиться результатами. Ответ включает предварительно отформатированный текст для шаринга.</p>
+    <p class="en"><strong>Step 4:</strong> Consume or share the returned object according to your own privacy policy.</p>
+    <p class="ru"><strong>Шаг 4:</strong> Использовать или публиковать объект результата в соответствии со своей политикой приватности.</p>
   </div>
 
   <!-- Scales reference -->
@@ -170,27 +157,27 @@
         <tr style="border-bottom:1px solid #21262d">
           <td style="padding:0.5rem">🪨 Operational Stability</td>
           <td style="padding:0.5rem">operational_stability</td>
-          <td style="padding:0.5rem">1, 6, 11, 16, 21</td>
+          <td style="padding:0.5rem">0–4</td>
         </tr>
         <tr style="border-bottom:1px solid #21262d">
           <td style="padding:0.5rem">🤝 Social Initiation</td>
           <td style="padding:0.5rem">social_initiation</td>
-          <td style="padding:0.5rem">2, 7, 12, 17, 22</td>
+          <td style="padding:0.5rem">5–9</td>
         </tr>
         <tr style="border-bottom:1px solid #21262d">
           <td style="padding:0.5rem">🔍 Exploratory Drive</td>
           <td style="padding:0.5rem">exploratory_drive</td>
-          <td style="padding:0.5rem">3, 8, 13, 18, 23</td>
+          <td style="padding:0.5rem">10–14</td>
         </tr>
         <tr style="border-bottom:1px solid #21262d">
           <td style="padding:0.5rem">📋 Execution Discipline</td>
           <td style="padding:0.5rem">execution_discipline</td>
-          <td style="padding:0.5rem">4, 9, 14, 19, 24</td>
+          <td style="padding:0.5rem">15–19</td>
         </tr>
         <tr>
           <td style="padding:0.5rem">⚡ Agency Assertiveness</td>
           <td style="padding:0.5rem">agency_assertiveness</td>
-          <td style="padding:0.5rem">5, 10, 15, 20, 25</td>
+          <td style="padding:0.5rem">20–24</td>
         </tr>
       </tbody>
     </table>
