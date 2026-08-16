@@ -106,34 +106,33 @@
   <!-- Submit endpoint -->
   <h2>2. <span class="en">Submit Answers</span><span class="ru">Отправить ответы</span></h2>
   <div class="card">
-    <p><span class="method">POST</span> <span class="endpoint">/api/submit/</span></p>
-    <p class="en">Submit answers and receive scored results. Since GitHub Pages is static, this returns a pre-computed result page — the scoring happens client-side via the embedded script in the response.</p>
-    <p class="ru">Отправьте ответы и получите результаты. Поскольку GitHub Pages статичен, возвращается страница с предвычисленными результатами — скоринг происходит на стороне клиента через встроенный скрипт.</p>
+    <p><span class="method">GET</span> <span class="endpoint">/api/submit/?q1=…&amp;q25=…</span></p>
+    <p class="en">GitHub Pages serves static files only — it answers <code>POST</code> with <code>405</code>. Answers therefore travel in the query string, and the page scores them client-side.</p>
+    <p class="ru">GitHub Pages отдаёт только статику и отвечает на <code>POST</code> кодом <code>405</code>. Поэтому ответы передаются в query-строке, а страница считает баллы на клиенте.</p>
 
-    <h3 class="en">Request body</h3>
-    <h3 class="ru">Тело запроса</h3>
-    <pre>{
-  "answers": [
-    { "question_id": 1, "value": 3 },
-    { "question_id": 2, "value": 4 },
-    ...
-    { "question_id": 25, "value": 2 }
-  ]
-}</pre>
-
-    <p class="en"><strong>value</strong> — integer from 1 to 5, corresponding to the option position (1 = leftmost, 5 = rightmost).</p>
-    <p class="ru"><strong>value</strong> — целое число от 1 до 5, соответствующее позиции варианта (1 = крайний левый, 5 = крайний правый).</p>
+    <h3 class="en">Query parameters</h3>
+    <h3 class="ru">Параметры запроса</h3>
+    <pre>q1..q25       integer 1-5, the option position (1 = leftmost, 5 = rightmost)
+na            optional, comma-separated question numbers answered "not applicable"
+model         optional, agent config recorded in the result
+prompt        optional
+tools         optional
+permissions   optional
+temperature   optional</pre>
 
     <h3 class="en">Response</h3>
     <h3 class="ru">Ответ</h3>
-    <p class="en">Returns an HTML page with the scored results rendered. For a pure JSON response, use <code>/api/submit/index.html</code> with the same POST body — the page contains embedded JSON with scores, scale breakdown, temperament type, and interpretation.</p>
-    <p class="ru">Возвращает HTML-страницу с отрисованными результатами. Для чистого JSON-ответа используйте <code>/api/submit/index.html</code> с тем же телом POST — страница содержит встроенный JSON с баллами, разбивкой по шкалам, типом темперамента и интерпретацией.</p>
+    <p class="en">An HTML page whose single <code>&lt;pre&gt;</code> block contains the result JSON: <code>timestamp</code>, <code>answers</code>, <code>na_questions</code>, <code>agent_config</code>, <code>results</code> (per-scale scores), <code>temperament_type</code>, and <code>scoring_info</code>. An agent can read it without a browser by extracting that block.</p>
+    <p class="ru">HTML-страница, внутри единственного блока <code>&lt;pre&gt;</code> — JSON результата: <code>timestamp</code>, <code>answers</code>, <code>na_questions</code>, <code>agent_config</code>, <code>results</code> (баллы по шкалам), <code>temperament_type</code>, <code>scoring_info</code>. Агент читает его без браузера, вынув этот блок.</p>
 
     <h3 class="en">Example</h3>
     <h3 class="ru">Пример</h3>
-    <pre>curl -X POST https://rain-ouroboros.github.io/agent-temperament-test/api/submit/ \
-  -H "Content-Type: application/json" \
-  -d '{"answers":[{"question_id":1,"value":3},{"question_id":2,"value":4}]}'</pre>
+    <pre>curl -s "https://rain-ouroboros.github.io/agent-temperament-test/api/submit/?\
+q1=4&amp;q2=2&amp;q3=1&amp;q4=5&amp;q5=4&amp;q6=3&amp;q7=4&amp;q8=2&amp;q9=3&amp;q10=4&amp;q11=5&amp;q12=4&amp;q13=2&amp;\
+q14=4&amp;q15=3&amp;q16=5&amp;q17=2&amp;q18=4&amp;q19=3&amp;q20=4&amp;q21=5&amp;q22=3&amp;q23=4&amp;q24=2&amp;q25=4&amp;\
+model=claude-opus-5&amp;tools=repo,web"</pre>
+    <p class="en">The scoring is pure client-side JavaScript, so <code>curl</code> alone returns the page shell. Fetch it with any renderer that runs scripts, or score locally with <code>api-score.js</code> — see step 3 below.</p>
+    <p class="ru">Скоринг — чистый клиентский JavaScript, поэтому один <code>curl</code> вернёт только оболочку страницы. Открывайте её любым рендерером со скриптами либо считайте локально через <code>api-score.js</code> — см. шаг 3 ниже.</p>
   </div>
 
   <!-- Agent-native workflow -->
@@ -145,11 +144,11 @@
     <p class="en"><strong>Step 2:</strong> Answer each question honestly. For each, choose a value 1–5. Note which questions have <code>"reverse": true</code> — the scoring engine handles reversal automatically.</p>
     <p class="ru"><strong>Шаг 2:</strong> Честно ответить на каждый вопрос. Для каждого выбрать значение 1–5. Обратить внимание на вопросы с <code>"reverse": true</code> — движок скоринга обрабатывает реверс автоматически.</p>
 
-    <p class="en"><strong>Step 3:</strong> <code>POST /api/submit/</code> with the answers array. Receive scored results.</p>
-    <p class="ru"><strong>Шаг 3:</strong> <code>POST /api/submit/</code> с массивом ответов. Получить результаты.</p>
+    <p class="en"><strong>Step 3:</strong> Score without a browser: run <code>api-score.js</code>, a dependency-free scoring engine that reads the same question bank. Or open <code>GET /api/submit/?q1=…</code> in a script-capable renderer and read the JSON from its <code>&lt;pre&gt;</code> block.</p>
+    <p class="ru"><strong>Шаг 3:</strong> Посчитать без браузера: <code>api-score.js</code> — движок скоринга без зависимостей, читающий тот же банк вопросов. Либо открыть <code>GET /api/submit/?q1=…</code> в рендерере со скриптами и взять JSON из блока <code>&lt;pre&gt;</code>.</p>
 
-    <p class="en"><strong>Step 4:</strong> Share the results. The response includes a pre-formatted share text.</p>
-    <p class="ru"><strong>Шаг 4:</strong> Поделиться результатами. Ответ включает предварительно отформатированный текст для шаринга.</p>
+    <p class="en"><strong>Step 4:</strong> The result JSON carries the per-scale scores and the temperament type. Format it however your agent reports.</p>
+    <p class="ru"><strong>Шаг 4:</strong> JSON результата несёт баллы по шкалам и тип темперамента. Форматируйте так, как ваш агент отчитывается.</p>
   </div>
 
   <!-- Scales reference -->
